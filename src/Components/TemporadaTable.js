@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Button, Flex, Modal, Table } from "antd";
 import axios from "axios";
 import { EditOutlined } from "@ant-design/icons";
-import PaisForm from "./PaisForm";
+import TemporadaForm from "./TemporadaForm";
 
-function PaisTable() {
+function TemporadaTable() {
   const [state, setstate] = useState([]);
   const [loading, setloading] = useState(true);
   const [formValues, setFormValues] = useState();
   const [open, setOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
-  const apiServer = process.env.REACT_APP_API_SERVER + "pais";
+  const apiServer = process.env.REACT_APP_API_SERVER + "temporada";
 
   useEffect(
     () => {
@@ -25,8 +25,8 @@ function PaisTable() {
       setloading(false);
       setstate(
         res.data.map((row) => ({
-          pPais: row.pPais,
-          cPais: row.cPais,
+          pTemporada: row.pTemporada,
+          cTemporada: row.cTemporada,
         }))
       );
     });
@@ -47,12 +47,12 @@ function PaisTable() {
       });
   };
 
-  const PaisFormModal = ({ open, grabar, onCancel }) => {
+  const TemporadaFormModal = ({ open, grabar, onCancel }) => {
     const [formInstance, setFormInstance] = useState();
     return (
       <Modal
         open={open}
-        title="Formulario Paises"
+        title="Formulario Temporadaes"
         okText="Grabar"
         cancelText="Cancelar"
         okButtonProps={{
@@ -70,7 +70,7 @@ function PaisTable() {
           }
         }}
       >
-        <PaisForm
+        <TemporadaForm
           initialValues={formValues}
           isInsert={formValues === undefined}
           onFormInstanceReady={(instance) => {
@@ -93,11 +93,11 @@ function PaisTable() {
   };
 
   const columns = [
-    { title: "Id.", dataIndex: "pPais", key: "pPais" },
-    { title: "Nombre", dataIndex: "cPais", key: "cPais" },
+    { title: "Id.", dataIndex: "pTemporada", key: "pTemporada" },
+    { title: "Nombre", dataIndex: "cTemporada", key: "cTemporada" },
     {
       title: "Action",
-      // dataIndex: "pPais",
+      // dataIndex: "pTemporada",
       key: "action",
       align: "center",
       render: (_, record) => {
@@ -118,11 +118,11 @@ function PaisTable() {
         </Button>
       </Flex>
       {contextHolder}
-      <PaisFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
-      <h2 className="centered">Paises</h2>
+      <TemporadaFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
+      <h2 className="centered">Temporadaes</h2>
       {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
     </div>
   );
 }
 
-export default PaisTable;
+export default TemporadaTable;

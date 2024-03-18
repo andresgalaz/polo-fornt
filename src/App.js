@@ -1,32 +1,21 @@
-/*
-import React from "react";
-import "./App.css";
-import Sidebar from "./Sidebar";
-
-function App() {
-  return (
-    <div className="App" id="outer-container">
-      <h1>Polo Handicap</h1>
-      <Sidebar pageWrapId={"page-wrap"} outerContainerId={"outer-container"} />
-      <div id="page-wrap" className="centro"></div>
-    </div>
-  );
-}
-
-export default App;
-*/
 import React, { useState } from "react";
 import {
+  CaretRightOutlined,
+  DeliveredProcedureOutlined,
+  FormOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-  AlertOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Button, theme } from "antd";
+import PaisTable from "./Components/PaisTable";
+import { useLocation, useNavigate, Route, Routes } from "react-router-dom";
+import TemporadaTable from "./Components/TemporadaTable";
 
 const { Header, Sider, Content } = Layout;
+
+const Page1 = () => {
+  return <h4> Page 1</h4>;
+};
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -34,11 +23,21 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  let navigate = useNavigate();
+  const selectedKey = useLocation().pathname;
+  const highlight = () => {
+    if (selectedKey === "/") {
+      return ["1"];
+    } else if (selectedKey === "/pais-abm") {
+      return ["2"];
+    }
+  };
+
   return (
     <Layout>
       <Layout>
-        <Header style={{ paddingTop: -10, verticalAlign: "center", color: colorBgContainer, textAlign: "center" }}>
-          <h2>Hola Mundo</h2>
+        <Header style={{ color: colorBgContainer, textAlign: "center" }}>
+          <h2 style={{ margin: 0 }}>Polo Handicap</h2>
         </Header>
       </Layout>
       <Layout>
@@ -58,23 +57,37 @@ const App = () => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["1"]}
+            selectedKeys={highlight()}
+            defaultSelectedKeys={["ABM-MENU"]}
             items={[
               {
-                key: "1",
-                icon: <UserOutlined />,
-                label: "Polo Handicap",
-              },
-              {
-                key: "2",
-                icon: <VideoCameraOutlined />,
+                key: "ABM-MENU",
+                icon: <CaretRightOutlined />,
                 label: "ABM",
-                children: [{ key: "22", icon: <AlertOutlined />, label: "Paises" }],
+                children: [
+                  {
+                    key: "PAIS_MENU",
+                    icon: <FormOutlined />,
+                    label: "Paises",
+                    onClick: () => {
+                      navigate("/pais-abm");
+                    },
+                  },
+                  {
+                    key: "TEMPORADA_MENU",
+                    icon: <FormOutlined />,
+                    label: "Temporadas",
+                    onClick: () => {
+                      navigate("/temporada-adm");
+                    },
+                  },
+                ],
               },
               {
-                key: "3",
-                icon: <UploadOutlined />,
-                label: "nav 3",
+                key: "REPORTE-MENU",
+                icon: <CaretRightOutlined />,
+                label: "Reportes",
+                children: [{ key: "EN_CONSTRUCCION", icon: <DeliveredProcedureOutlined />, label: "En construccion" }],
               },
             ]}
           />
@@ -88,8 +101,12 @@ const App = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          Content
-        </Content>
+          <Routes>
+            <Route exact path="/" element={<Page1 />} />
+            <Route path="/pais-abm" element={<PaisTable />} />
+            <Route path="/temporada-abm" element={<TemporadaTable />} />
+          </Routes>
+        </Content>{" "}
       </Layout>
     </Layout>
   );
