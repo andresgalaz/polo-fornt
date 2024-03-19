@@ -21,38 +21,45 @@ function TemporadaTable() {
   );
 
   const getData = async () => {
-    await axios.get(apiServer).then((res) => {
+    try {
       setloading(false);
-      setstate(
-        res.data.map((row) => ({
-          pTemporada: row.pTemporada,
-          cTemporada: row.cTemporada,
-        }))
-      );
-    });
+      const res = await axios.get(apiServer);
+      setstate(res.data);
+    } catch (e) {
+      let msg = e.response.data;
+      if (e.code !== "ERROR_BAD_REQUEST") {
+        console.error(msg);
+        msg = "Error inesperado en el servidor";
+      }
+      modal.error({
+        title: "Mensaje del Servidor",
+        content: <>{msg}</>,
+      });
+    }
   };
 
   const putData = async (values) => {
-    await axios
-      .post(apiServer, values)
-      .then((res) => {
-        setloading(false);
-      })
-      .catch((err) => {
-        console.err(err.response.data);
-        modal.error({
-          title: "Mensaje del Servidor",
-          content: <>{err.response.data}</>,
-        });
+    try {
+      await axios.post(apiServer, values);
+    } catch (e) {
+      let msg = e.response.data;
+      if (e.code !== "ERROR_BAD_REQUEST") {
+        console.error(msg);
+        msg = "Error inesperado en el servidor";
+      }
+      modal.error({
+        title: "Mensaje del Servidor",
+        content: <>{msg}</>,
       });
+    }
   };
 
-  const TemporadaFormModal = ({ open, grabar, onCancel }) => {
+  const TemporadaFormModal = ({ open, onCancel }) => {
     const [formInstance, setFormInstance] = useState();
     return (
       <Modal
         open={open}
-        title="Formulario Temporadaes"
+        title="Formulario Temporadas"
         okText="Grabar"
         cancelText="Cancelar"
         okButtonProps={{
@@ -64,7 +71,9 @@ function TemporadaTable() {
           try {
             const values = await formInstance?.validateFields();
             formInstance?.resetFields();
-            grabar(values);
+            await putData(values);
+            await getData();
+            setOpen(false);
           } catch (error) {
             console.error("Failed:", error);
           }
@@ -86,15 +95,11 @@ function TemporadaTable() {
     setFormValues(rec);
   };
 
-  const grabar = async (values) => {
-    await putData(values);
-    await getData();
-    setOpen(false);
-  };
-
   const columns = [
     { title: "Id.", dataIndex: "pTemporada", key: "pTemporada" },
-    { title: "Nombre", dataIndex: "cTemporada", key: "cTemporada" },
+    { title: "Años", dataIndex: "nTemporada", key: "nTemporada" },
+    { title: "Categoria", dataIndex: "cCategoria", key: "cCategoria" },
+    { title: "Descripción", dataIndex: "cDescripcion", key: "cDescripcion" },
     {
       title: "Action",
       // dataIndex: "pTemporada",
@@ -118,8 +123,8 @@ function TemporadaTable() {
         </Button>
       </Flex>
       {contextHolder}
-      <TemporadaFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
-      <h2 className="centered">Temporadaes</h2>
+      <TemporadaFormModal open={open} onCancel={() => setOpen(false)} />
+      <h2 className="centered">Temporadas</h2>
       {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
     </div>
   );

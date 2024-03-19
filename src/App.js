@@ -30,6 +30,8 @@ const App = () => {
       return ["1"];
     } else if (selectedKey === "/pais-abm") {
       return ["2"];
+    } else if (selectedKey === "/temporada-abm") {
+      return ["3"];
     }
   };
 
@@ -78,7 +80,7 @@ const App = () => {
                     icon: <FormOutlined />,
                     label: "Temporadas",
                     onClick: () => {
-                      navigate("/temporada-adm");
+                      navigate("/temporada-abm");
                     },
                   },
                 ],

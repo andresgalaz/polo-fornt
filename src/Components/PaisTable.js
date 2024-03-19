@@ -21,30 +21,37 @@ function PaisTable() {
   );
 
   const getData = async () => {
-    await axios.get(apiServer).then((res) => {
+    try {
       setloading(false);
-      setstate(
-        res.data.map((row) => ({
-          pPais: row.pPais,
-          cPais: row.cPais,
-        }))
-      );
-    });
+      const res = await axios.get(apiServer);
+      setstate(res.data);
+    } catch (e) {
+      let msg = e.response.data;
+      if (e.code !== "ERROR_BAD_REQUEST") {
+        console.error(msg);
+        msg = "Error inesperado en el servidor";
+      }
+      modal.error({
+        title: "Mensaje del Servidor",
+        content: <>{msg}</>,
+      });
+    }
   };
 
   const putData = async (values) => {
-    await axios
-      .post(apiServer, values)
-      .then((res) => {
-        setloading(false);
-      })
-      .catch((err) => {
-        console.err(err.response.data);
-        modal.error({
-          title: "Mensaje del Servidor",
-          content: <>{err.response.data}</>,
-        });
+    try {
+      await axios.post(apiServer, values);
+    } catch (e) {
+      let msg = e.response.data;
+      if (e.code !== "ERROR_BAD_REQUEST") {
+        console.error(msg);
+        msg = "Error inesperado en el servidor";
+      }
+      modal.error({
+        title: "Mensaje del Servidor",
+        content: <>{msg}</>,
       });
+    }
   };
 
   const PaisFormModal = ({ open, grabar, onCancel }) => {
