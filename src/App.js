@@ -54,7 +54,7 @@ const App = () => {
         </Header>
       </Layout>
       <Layout>
-        <Sider trigger={null} collapsible collapsed={collapsed}>
+        <Sider trigger={null} collapsible collapsed={collapsed} width={290} style={{ minHeight: "100vh" }}>
           <div className="demo-logo-vertical" />
           <Button
             type="text"
