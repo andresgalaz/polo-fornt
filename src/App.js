@@ -1,21 +1,37 @@
 import React, { useState } from "react";
 import {
-  CaretRightOutlined,
+  ContainerOutlined,
+  DatabaseOutlined,
   DeliveredProcedureOutlined,
   FormOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Button, theme } from "antd";
-import PaisTable from "./Components/PaisTable";
 import { useLocation, useNavigate, Route, Routes } from "react-router-dom";
-import TemporadaTable from "./Components/TemporadaTable";
+
+import HomePage from "./Components/HomePage";
+import AcercaDe from "./Components/AcercaDe";
+
+import AbiertosAbm from "./Components/ABM/AbiertosAbm";
+import CategoriaAbm from "./Components/ABM/CategoriaAbm";
+import EquipoAbm from "./Components/ABM/EquipoAbm";
+import FormacionesAbm from "./Components/ABM/FormacionesAbm";
+import JugadorAbm from "./Components/ABM/JugadorAbm";
+import PaisAbm from "./Components/ABM/PaisAbm";
+import PartidosAbm from "./Components/ABM/PartidosAbm";
+import PuntajeAbm from "./Components/ABM/PuntajeAbm";
+import TemporadaAbm from "./Components/ABM/TemporadaAbm";
+import FormacionTemporadas from "./Components/reportes/FormacionTemporadas";
+import HcpPerformanceEquipo from "./Components/reportes/HcpPerformanceEquipo";
+import HcpPerformanceJugador from "./Components/reportes/HcpPerformanceJugador";
+import HcpVariacionJugadores from "./Components/reportes/HcpVariacionJugadores";
+import RankingEquipos from "./Components/reportes/RankingEquipos";
+import RankingJugadores from "./Components/reportes/RankingJugadores";
+import ResultadoPartidos from "./Components/reportes/ResultadoPartidos";
 
 const { Header, Sider, Content } = Layout;
-
-const Page1 = () => {
-  return <h4> Page 1</h4>;
-};
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -25,14 +41,9 @@ const App = () => {
 
   let navigate = useNavigate();
   const selectedKey = useLocation().pathname;
+
   const highlight = () => {
-    if (selectedKey === "/") {
-      return ["1"];
-    } else if (selectedKey === "/pais-abm") {
-      return ["2"];
-    } else if (selectedKey === "/temporada-abm") {
-      return ["3"];
-    }
+    if (selectedKey.substring(0, 1) === "/") return selectedKey.substring(1);
   };
 
   return (
@@ -64,11 +75,11 @@ const App = () => {
             items={[
               {
                 key: "ABM-MENU",
-                icon: <CaretRightOutlined />,
+                icon: <DatabaseOutlined />,
                 label: "ABM",
                 children: [
                   {
-                    key: "PAIS_MENU",
+                    key: "pais-abm",
                     icon: <FormOutlined />,
                     label: "Paises",
                     onClick: () => {
@@ -76,20 +87,134 @@ const App = () => {
                     },
                   },
                   {
-                    key: "TEMPORADA_MENU",
+                    key: "temporada-abm",
                     icon: <FormOutlined />,
                     label: "Temporadas",
                     onClick: () => {
                       navigate("/temporada-abm");
                     },
                   },
+                  {
+                    key: "categoria-abm",
+                    icon: <FormOutlined />,
+                    label: "Categorias",
+                    onClick: () => {
+                      navigate("/categoria-abm");
+                    },
+                  },
+                  {
+                    key: "abiertos-abm",
+                    icon: <FormOutlined />,
+                    label: "Abiertos",
+                    onClick: () => {
+                      navigate("/abiertos-abm");
+                    },
+                  },
+                  {
+                    key: "puntaje-abm",
+                    icon: <FormOutlined />,
+                    label: "Puntaje",
+                    onClick: () => {
+                      navigate("/puntaje-abm");
+                    },
+                  },
+                  {
+                    key: "equipo-abm",
+                    icon: <FormOutlined />,
+                    label: "Equipos",
+                    onClick: () => {
+                      navigate("/equipo-abm");
+                    },
+                  },
+                  {
+                    key: "jugador-abm",
+                    icon: <FormOutlined />,
+                    label: "Jugadores",
+                    onClick: () => {
+                      navigate("/jugador-abm");
+                    },
+                  },
+                  {
+                    key: "formaciones-abm",
+                    icon: <FormOutlined />,
+                    label: "Formaciones",
+                    onClick: () => {
+                      navigate("/formaciones-abm");
+                    },
+                  },
+                  {
+                    key: "partidos-abm",
+                    icon: <FormOutlined />,
+                    label: "Partidos",
+                    onClick: () => {
+                      navigate("/partidos-abm");
+                    },
+                  },
                 ],
               },
+              { key: "PROCEDOS", icon: <SettingOutlined />, label: "Procesos" },
               {
                 key: "REPORTE-MENU",
-                icon: <CaretRightOutlined />,
+                icon: <ContainerOutlined />,
                 label: "Reportes",
-                children: [{ key: "EN_CONSTRUCCION", icon: <DeliveredProcedureOutlined />, label: "En construccion" }],
+                children: [
+                  {
+                    key: "ranking-equipos",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "Ranking Equipos y Resultados",
+                    onClick: () => {
+                      navigate("/ranking-equipos");
+                    },
+                  },
+                  {
+                    key: "ranking-jugadores",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "Ranking Jugadores",
+                    onClick: () => {
+                      navigate("/ranking-jugadores");
+                    },
+                  },
+                  {
+                    key: "hcp-equipo",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "HCP Performance Equipo",
+                    onClick: () => {
+                      navigate("/hcp-equipo");
+                    },
+                  },
+                  {
+                    key: "hcp-performance-jugador",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "HCP Performance Jugador",
+                    onClick: () => {
+                      navigate("/hcp-performance-jugador");
+                    },
+                  },
+                  {
+                    key: "hcp-variacion-jugador",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "HCP Variacion Jugador",
+                    onClick: () => {
+                      navigate("/hcp-variacion-jugador");
+                    },
+                  },
+                  {
+                    key: "formacion-temporadas",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "Formación Temporadas",
+                    onClick: () => {
+                      navigate("/formacion-temporadas");
+                    },
+                  },
+                  {
+                    key: "resultado-partidos",
+                    icon: <DeliveredProcedureOutlined />,
+                    label: "Resultado Partidos",
+                    onClick: () => {
+                      navigate("/resultado-partidos");
+                    },
+                  },
+                ],
               },
             ]}
           />
@@ -104,9 +229,24 @@ const App = () => {
           }}
         >
           <Routes>
-            <Route exact path="/" element={<Page1 />} />
-            <Route path="/pais-abm" element={<PaisTable />} />
-            <Route path="/temporada-abm" element={<TemporadaTable />} />
+            <Route exact path="/" element={<HomePage />} />
+            <Route path="/abiertos-abm" element={<AbiertosAbm />} />
+            <Route path="/acerca-de" element={<AcercaDe />} />
+            <Route path="/categoria-abm" element={<CategoriaAbm />} />
+            <Route path="/equipo-abm" element={<EquipoAbm />} />
+            <Route path="/formaciones-abm" element={<FormacionesAbm />} />
+            <Route path="/formacion-temporadas" element={<FormacionTemporadas />} />
+            <Route path="/hcp-equipo" element={<HcpPerformanceEquipo />} />
+            <Route path="/hcp-performance-jugador" element={<HcpPerformanceJugador />} />
+            <Route path="/hcp-variacion-jugador" element={<HcpVariacionJugadores />} />
+            <Route path="/jugador-abm" element={<JugadorAbm />} />
+            <Route path="/pais-abm" element={<PaisAbm />} />
+            <Route path="/partidos-abm" element={<PartidosAbm />} />
+            <Route path="/puntaje-abm" element={<PuntajeAbm />} />
+            <Route path="/resultado-partidos" element={<ResultadoPartidos />} />
+            <Route path="/ranking-equipos" element={<RankingEquipos />} />
+            <Route path="/ranking-jugadores" element={<RankingJugadores />} />
+            <Route path="/temporada-abm" element={<TemporadaAbm />} />
           </Routes>
         </Content>{" "}
       </Layout>

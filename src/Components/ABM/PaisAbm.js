@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Button, Flex, Modal, Table } from "antd";
 import axios from "axios";
 import { EditOutlined } from "@ant-design/icons";
-import TemporadaForm from "./TemporadaForm";
+import PaisForm from "./PaisForm";
 
-function TemporadaTable() {
+function PaisAbm() {
   const [state, setstate] = useState([]);
   const [loading, setloading] = useState(true);
   const [formValues, setFormValues] = useState();
   const [open, setOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
-  const apiServer = process.env.REACT_APP_API_SERVER + "temporada";
+  const apiServer = process.env.REACT_APP_API_SERVER + "pais";
 
   useEffect(
     () => {
@@ -54,12 +54,12 @@ function TemporadaTable() {
     }
   };
 
-  const TemporadaFormModal = ({ open, onCancel }) => {
+  const PaisFormModal = ({ open, grabar, onCancel }) => {
     const [formInstance, setFormInstance] = useState();
     return (
       <Modal
         open={open}
-        title="Formulario Temporadas"
+        title="Formulario Paises"
         okText="Grabar"
         cancelText="Cancelar"
         okButtonProps={{
@@ -71,15 +71,13 @@ function TemporadaTable() {
           try {
             const values = await formInstance?.validateFields();
             formInstance?.resetFields();
-            await putData(values);
-            await getData();
-            setOpen(false);
+            grabar(values);
           } catch (error) {
             console.error("Failed:", error);
           }
         }}
       >
-        <TemporadaForm
+        <PaisForm
           initialValues={formValues}
           isInsert={formValues === undefined}
           onFormInstanceReady={(instance) => {
@@ -95,14 +93,18 @@ function TemporadaTable() {
     setFormValues(rec);
   };
 
+  const grabar = async (values) => {
+    await putData(values);
+    await getData();
+    setOpen(false);
+  };
+
   const columns = [
-    { title: "Id.", dataIndex: "pTemporada", key: "pTemporada" },
-    { title: "Años", dataIndex: "nTemporada", key: "nTemporada" },
-    { title: "Categoria", dataIndex: "cCategoria", key: "cCategoria" },
-    { title: "Descripción", dataIndex: "cDescripcion", key: "cDescripcion" },
+    { title: "Id.", dataIndex: "pPais", key: "pPais" },
+    { title: "Nombre", dataIndex: "cPais", key: "cPais" },
     {
       title: "Action",
-      // dataIndex: "pTemporada",
+      // dataIndex: "pPais",
       key: "action",
       align: "center",
       render: (_, record) => {
@@ -123,11 +125,11 @@ function TemporadaTable() {
         </Button>
       </Flex>
       {contextHolder}
-      <TemporadaFormModal open={open} onCancel={() => setOpen(false)} />
-      <h2 className="centered">Temporadas</h2>
+      <PaisFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
+      <h2 className="centered">Paises</h2>
       {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
     </div>
   );
 }
 
-export default TemporadaTable;
+export default PaisAbm;
