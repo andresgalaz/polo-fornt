@@ -34,9 +34,6 @@ import ResultadoPartidos from "./Components/reportes/ResultadoPartidos";
 const { Header, Sider, Content } = Layout;
 
 const App = () => {
-  // Ambiente
-  console.log("process.env:", process.env);
-
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
