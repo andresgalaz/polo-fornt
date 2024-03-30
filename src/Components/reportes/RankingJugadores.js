@@ -1,6 +1,6 @@
 import { Flex, Modal, Select, Space, Table } from "antd";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import AxiosService from "../../Helpers/AxiosService";
 
 export default function RankingJugadores() {
   const [state, setstate] = useState([]);
@@ -9,76 +9,45 @@ export default function RankingJugadores() {
   const [modal, contextHolder] = Modal.useModal();
   const [categorias, setCategorias] = useState([]);
   const [temporadas, setTemporadas] = useState([]);
-  const apiServer = process.env.REACT_APP_API_SERVER + "reporte/ranking-jugadores";
+  // const apiServer = process.env.REACT_APP_API_SERVER + "reporte/ranking-jugadores";
 
   useEffect(
     () => {
       getData();
-      async function getTemporadas() {
-        try {
-          const data = (await axios.get(process.env.REACT_APP_API_SERVER + "temporada")).data;
-          // Rama un par value / label con mas información
-          const dataCb = data.reduce((acum, curr) => {
-            acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
-            return acum;
-          }, []);
-          dataCb.unshift({ value: "", label: "Todas" });
-          setTemporadas(dataCb);
-        } catch (e) {
-          let msg = e.response.data;
-          if (e.code !== "ERROR_BAD_REQUEST") {
-            console.error(msg);
-            msg = "Error inesperado en el servidor";
-          }
-          modal.error({
-            title: "Mensaje del Servidor",
-            content: <>{msg}</>,
-          });
-        }
-      }
-      getTemporadas();
-
-      async function getCategorias() {
-        try {
-          const data = (await axios.get(process.env.REACT_APP_API_SERVER + "categoria")).data;
-          data.unshift({ pCategoria: "", cDescripcion: "Todas" });
-          setCategorias(data);
-        } catch (e) {
-          let msg = e.response.data;
-          if (e.code !== "ERROR_BAD_REQUEST") {
-            console.error(msg);
-            msg = "Error inesperado en el servidor";
-          }
-          modal.error({
-            title: "Mensaje del Servidor",
-            content: <>{msg}</>,
-          });
-        }
-      }
-      getCategorias();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
+  const getTemporadas = async () => {
+    const { data } = await AxiosService.get("temporada", modal);
+    if (!data) return;
+    // Arma un par [value / label] con mas información
+    const dataCb = data.reduce((acum, curr) => {
+      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
+      return acum;
+    }, []);
+    dataCb.unshift({ value: "", label: "Todas" });
+    setTemporadas(dataCb);
+  };
+
+  const getCategorias = async () => {
+    const { data } = await AxiosService.get("categoria", modal);
+    if (!data) return;
+    // const data = (await axios.get(process.env.REACT_APP_API_SERVER + "categoria")).data;
+    data.unshift({ pCategoria: "", cDescripcion: "Todas" });
+    setCategorias(data);
+  };
+
   const getData = async () => {
-    try {
+    await getTemporadas();
+    await getCategorias();
+
+    const cUrlRequest = "reporte/ranking-jugadores?" + new URLSearchParams(filtro).toString();
+    const { data } = await AxiosService.get(cUrlRequest, modal, () => {
       setloading(false);
-      const cUrlRequest = apiServer + "?" + new URLSearchParams(filtro).toString();
-      console.log(cUrlRequest);
-      const res = await axios.get(cUrlRequest);
-      setstate(res.data);
-    } catch (e) {
-      let msg = e.response.data;
-      if (e.code !== "ERROR_BAD_REQUEST") {
-        console.error(msg);
-        msg = "Error inesperado en el servidor";
-      }
-      modal.error({
-        title: "Mensaje del Servidor",
-        content: <>{msg}</>,
-      });
-    }
+    });
+    setstate(data);
   };
 
   const columns = [
@@ -126,7 +95,7 @@ export default function RankingJugadores() {
       </Flex>
 
       {contextHolder}
-      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
+      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} rowKey="id" />}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button, Flex, Modal, Table } from "antd";
-import axios from "axios";
 import { EditOutlined } from "@ant-design/icons";
 import TemporadaForm from "./TemporadaForm";
+import AxiosService from "../../Helpers/AxiosService";
 
 function TemporadaAbm() {
   const [state, setstate] = useState([]);
@@ -10,7 +10,6 @@ function TemporadaAbm() {
   const [formValues, setFormValues] = useState();
   const [open, setOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
-  const apiServer = process.env.REACT_APP_API_SERVER + "temporada";
 
   useEffect(
     () => {
@@ -21,37 +20,10 @@ function TemporadaAbm() {
   );
 
   const getData = async () => {
-    try {
+    const { data } = await AxiosService.get("temporada", modal, () => {
       setloading(false);
-      const res = await axios.get(apiServer);
-      setstate(res.data);
-    } catch (e) {
-      let msg = e.response.data;
-      if (e.code !== "ERROR_BAD_REQUEST") {
-        console.error(msg);
-        msg = "Error inesperado en el servidor";
-      }
-      modal.error({
-        title: "Mensaje del Servidor",
-        content: <>{msg}</>,
-      });
-    }
-  };
-
-  const putData = async (values) => {
-    try {
-      await axios.post(apiServer, values);
-    } catch (e) {
-      let msg = e.response.data;
-      if (e.code !== "ERROR_BAD_REQUEST") {
-        console.error(msg);
-        msg = "Error inesperado en el servidor";
-      }
-      modal.error({
-        title: "Mensaje del Servidor",
-        content: <>{msg}</>,
-      });
-    }
+    });
+    setstate(data);
   };
 
   const TemporadaFormModal = ({ open, onCancel }) => {
@@ -71,7 +43,7 @@ function TemporadaAbm() {
           try {
             const values = await formInstance?.validateFields();
             formInstance?.resetFields();
-            await putData(values);
+            await AxiosService.put("temporada", values, modal);
             await getData();
             setOpen(false);
           } catch (error) {
@@ -98,7 +70,7 @@ function TemporadaAbm() {
   const columns = [
     { title: "Id.", dataIndex: "pTemporada", key: "pTemporada" },
     { title: "Años", dataIndex: "nTemporada", key: "nTemporada" },
-    { title: "Categoria", dataIndex: "cCategoria", key: "cCategoria" },
+    { title: "País", dataIndex: "cPais", key: "cPais" },
     { title: "Descripción", dataIndex: "cDescripcion", key: "cDescripcion" },
     {
       title: "Action",
@@ -125,7 +97,7 @@ function TemporadaAbm() {
       {contextHolder}
       <TemporadaFormModal open={open} onCancel={() => setOpen(false)} />
       <h2 className="centered">Temporadas</h2>
-      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
+      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} rowKey="pTemporada" />}
     </div>
   );
 }
