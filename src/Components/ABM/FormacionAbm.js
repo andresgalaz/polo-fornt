@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, Flex, Modal, Table } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-import PaisForm from "./PaisForm";
+import FormacionTable from "./FormacionTable";
 import AxiosService from "../../Helpers/AxiosService";
 
-function PaisAbm() {
+function FormacionAbm() {
   const [state, setstate] = useState([]);
   const [loading, setloading] = useState(true);
   const [formValues, setFormValues] = useState();
@@ -20,18 +20,19 @@ function PaisAbm() {
   );
 
   const getData = async () => {
-    const { data } = await AxiosService.get("pais", modal, () => {
+    const { data } = await AxiosService.get("formacion", modal, () => {
       setloading(false);
     });
     setstate(data);
   };
 
-  const PaisFormModal = ({ open, grabar, onCancel }) => {
+  const FormacionTableModal = ({ open, onCancel }) => {
     const [formInstance, setFormInstance] = useState();
     return (
       <Modal
         open={open}
-        title="Formulario Paises"
+        title="Seleccione la Formación"
+        width={"90%"}
         okText="Grabar"
         cancelText="Cancelar"
         okButtonProps={{
@@ -43,13 +44,15 @@ function PaisAbm() {
           try {
             const values = await formInstance?.validateFields();
             formInstance?.resetFields();
-            grabar(values);
+            await AxiosService.put("formacion", values, modal);
+            await getData();
+            setOpen(false);
           } catch (error) {
             console.error("Failed:", error);
           }
         }}
       >
-        <PaisForm
+        <FormacionTable
           initialValues={formValues}
           isInsert={formValues === undefined}
           onFormInstanceReady={(instance) => {
@@ -65,42 +68,19 @@ function PaisAbm() {
     setFormValues(rec);
   };
 
-  const grabar = async (values) => {
-    await AxiosService.put("pais", values, modal);
-    await getData();
-    setOpen(false);
-  };
-
-  const columns = [
-    { title: "Id.", dataIndex: "pPais", key: "pPais" },
-    { title: "Nombre", dataIndex: "cPais", key: "cPais" },
-    {
-      title: "Action",
-      key: "action",
-      align: "center",
-      render: (_, record) => {
-        return (
-          <Button icon={<EditOutlined />} onClick={() => abrir(record)}>
-            Editar
-          </Button>
-        );
-      },
-    },
-  ];
-
   return (
     <div>
       <Flex justify="flex-end">
         <Button type="primary" onClick={() => abrir()}>
-          Nuevo
+          Buscar Formación
         </Button>
       </Flex>
       {contextHolder}
-      <PaisFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
-      <h2 className="centered">Paises</h2>
-      {loading ? "Cargando ..." : <Table columns={columns} dataSource={state} rowKey="pPais" />}
+      <FormacionTableModal open={open} onCancel={() => setOpen(false)} />
+      <h2 className="centered">Formacions</h2>
+      En construcción
     </div>
   );
 }
 
-export default PaisAbm;
+export default FormacionAbm;

@@ -17,7 +17,7 @@ import AcercaDe from "./Components/AcercaDe";
 import AbiertosAbm from "./Components/ABM/AbiertosAbm";
 import CategoriaAbm from "./Components/ABM/CategoriaAbm";
 import EquipoAbm from "./Components/ABM/EquipoAbm";
-import FormacionesAbm from "./Components/ABM/FormacionesAbm";
+import FormacionAbm from "./Components/ABM/FormacionAbm";
 import JugadorAbm from "./Components/ABM/JugadorAbm";
 import PaisAbm from "./Components/ABM/PaisAbm";
 import PartidosAbm from "./Components/ABM/PartidosAbm";
@@ -135,11 +135,11 @@ const App = () => {
                     },
                   },
                   {
-                    key: "formaciones-abm",
+                    key: "formacion-abm",
                     icon: <FormOutlined />,
                     label: "Formaciones",
                     onClick: () => {
-                      navigate("/formaciones-abm");
+                      navigate("/formacion-abm");
                     },
                   },
                   {
@@ -234,7 +234,7 @@ const App = () => {
             <Route path="/acerca-de" element={<AcercaDe />} />
             <Route path="/categoria-abm" element={<CategoriaAbm />} />
             <Route path="/equipo-abm" element={<EquipoAbm />} />
-            <Route path="/formaciones-abm" element={<FormacionesAbm />} />
+            <Route path="/formacion-abm" element={<FormacionAbm />} />
             <Route path="/formacion-temporadas" element={<FormacionTemporadas />} />
             <Route path="/hcp-equipo" element={<HcpPerformanceEquipo />} />
             <Route path="/hcp-performance-jugador" element={<HcpPerformanceJugador />} />

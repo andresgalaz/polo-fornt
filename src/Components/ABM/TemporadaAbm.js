@@ -97,7 +97,7 @@ function TemporadaAbm() {
       {contextHolder}
       <TemporadaFormModal open={open} onCancel={() => setOpen(false)} />
       <h2 className="centered">Temporadas</h2>
-      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} rowKey="pTemporada" />}
+      {loading ? "CargandoCargando ..." : <Table columns={columns} dataSource={state} rowKey="pTemporada" />}
     </div>
   );
 }
