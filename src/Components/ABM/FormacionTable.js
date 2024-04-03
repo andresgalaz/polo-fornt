@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
 import { SelectOutlined } from "@ant-design/icons";
 
-export default function FormacionTable({ initialValues, onFormInstanceReady }) {
+export default function FormacionTable({ onOk }) {
   const [state, setstate] = useState([]);
   const [filtro] = useState({ pCategoria: "", pTemporada: "" });
   const [loading, setloading] = useState(true);
@@ -51,6 +51,7 @@ export default function FormacionTable({ initialValues, onFormInstanceReady }) {
 
   const seleccionar = (rec) => {
     console.log(rec);
+    onOk(rec);
   };
 
   const columns = [
@@ -93,7 +94,7 @@ export default function FormacionTable({ initialValues, onFormInstanceReady }) {
         <Space>
           Temporadas
           <Select
-            label="Temporadas"
+            label="Temporada"
             options={temporadas}
             defaultValue=""
             onChange={(v) => {
