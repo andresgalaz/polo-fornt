@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button, Flex, Modal, Table } from "antd";
-import axios from "axios";
 import { EditOutlined } from "@ant-design/icons";
 import PaisForm from "./PaisForm";
+import AxiosService from "../../Helpers/AxiosService";
 
 function PaisAbm() {
   const [state, setstate] = useState([]);
@@ -10,7 +10,6 @@ function PaisAbm() {
   const [formValues, setFormValues] = useState();
   const [open, setOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
-  const apiServer = process.env.REACT_APP_API_SERVER + "pais";
 
   useEffect(
     () => {
@@ -21,37 +20,10 @@ function PaisAbm() {
   );
 
   const getData = async () => {
-    try {
+    const { data } = await AxiosService.get("pais", modal, () => {
       setloading(false);
-      const res = await axios.get(apiServer);
-      setstate(res.data);
-    } catch (e) {
-      let msg = e.response.data;
-      if (e.code !== "ERROR_BAD_REQUEST") {
-        console.error(msg);
-        msg = "Error inesperado en el servidor";
-      }
-      modal.error({
-        title: "Mensaje del Servidor",
-        content: <>{msg}</>,
-      });
-    }
-  };
-
-  const putData = async (values) => {
-    try {
-      await axios.post(apiServer, values);
-    } catch (e) {
-      let msg = e.response.data;
-      if (e.code !== "ERROR_BAD_REQUEST") {
-        console.error(msg);
-        msg = "Error inesperado en el servidor";
-      }
-      modal.error({
-        title: "Mensaje del Servidor",
-        content: <>{msg}</>,
-      });
-    }
+    });
+    setstate(data);
   };
 
   const PaisFormModal = ({ open, grabar, onCancel }) => {
@@ -94,7 +66,7 @@ function PaisAbm() {
   };
 
   const grabar = async (values) => {
-    await putData(values);
+    await AxiosService.put("pais", values, modal);
     await getData();
     setOpen(false);
   };
@@ -104,7 +76,6 @@ function PaisAbm() {
     { title: "Nombre", dataIndex: "cPais", key: "cPais" },
     {
       title: "Action",
-      // dataIndex: "pPais",
       key: "action",
       align: "center",
       render: (_, record) => {
@@ -127,7 +98,7 @@ function PaisAbm() {
       {contextHolder}
       <PaisFormModal open={open} grabar={grabar} onCancel={() => setOpen(false)} />
       <h2 className="centered">Paises</h2>
-      {loading ? "Loading ..." : <Table columns={columns} dataSource={state} />}
+      {loading ? "Cargando ..." : <Table columns={columns} dataSource={state} rowKey="pPais" />}
     </div>
   );
 }

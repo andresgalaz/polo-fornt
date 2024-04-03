@@ -11,3 +11,13 @@
   width: "100%";
   text-align: center;
 }
+
+table:hover,
+tr:hover,
+thead:hover {
+  background: none !important;
+}
+
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #d0d0ff !important;
+}
