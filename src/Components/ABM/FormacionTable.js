@@ -1,22 +1,26 @@
-import { Button, Flex, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Input, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
 import { SelectOutlined } from "@ant-design/icons";
 
+let formacionesData;
 export default function FormacionTable({ onOk }) {
-  const [state, setstate] = useState([]);
-  const [filtro] = useState({ pCategoria: "", pTemporada: "" });
+  const [filtro] = useState({ pCategoria: "", pTemporada: "", cEquipo: "" });
   const [loading, setloading] = useState(true);
   const [modal, contextHolder] = Modal.useModal();
   const [categorias, setCategorias] = useState([]);
   const [temporadas, setTemporadas] = useState([]);
+  const [state, setState] = useState([]);
 
   useEffect(
     () => {
+      // getData();
+      getTemporadas();
+      getCategorias();
       getData();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [filtro]
   );
 
   const getTemporadas = async () => {
@@ -39,14 +43,21 @@ export default function FormacionTable({ onOk }) {
     setCategorias(data);
   };
 
+  const searchTable = () => {
+    const searchKey = filtro.cEquipo;
+    var data = formacionesData.filter((rec) =>
+      rec["cEquipo"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
+    );
+    setState(data);
+  };
+
   const getData = async () => {
-    await getTemporadas();
-    await getCategorias();
     const cUrlRequest = "formacion/equipo?" + new URLSearchParams(filtro).toString();
     const { data } = await AxiosService.get(cUrlRequest, modal, () => {
       setloading(false);
     });
-    setstate(data);
+    formacionesData = data;
+    searchTable();
   };
 
   const seleccionar = (rec) => {
@@ -78,6 +89,17 @@ export default function FormacionTable({ onOk }) {
       <div></div>
       <Flex justify="space-between" style={{ padding: 20 }}>
         <Space>
+          Equipo
+          <Input
+            placeholder="busca equipos"
+            style={{ width: "200px" }}
+            onChange={(e) => {
+              filtro.cEquipo = e.target.value;
+              searchTable();
+            }}
+          />
+        </Space>
+        <Space>
           Categoría
           <Select
             label="Categoría"
@@ -88,7 +110,7 @@ export default function FormacionTable({ onOk }) {
               getData();
             }}
             fieldNames={{ label: "cDescripcion", value: "pCategoria" }}
-            style={{ width: "240px" }}
+            style={{ width: "220px" }}
           ></Select>
         </Space>
         <Space>
@@ -102,7 +124,7 @@ export default function FormacionTable({ onOk }) {
               getData();
             }}
             // fieldNames={{ label: "Descripcion", value: "pTemporada" }}
-            style={{ width: "240px" }}
+            style={{ width: "300px" }}
           ></Select>
         </Space>
       </Flex>

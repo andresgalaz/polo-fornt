@@ -19,5 +19,15 @@ thead:hover {
 }
 
 .ant-table-tbody > tr.ant-table-row:hover > td {
-  background: #d0d0ff !important;
+  background: #d0dfff !important;
+}
+
+.ant-table-thead .ant-table-cell {
+  background-color: #65a7f8 !important;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.ant-table-tbody .ant-table-cell {
+  padding-left: 10px;
+  padding-right: 10px;
 }

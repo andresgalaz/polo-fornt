@@ -49,6 +49,8 @@ const App = () => {
   return (
     <ConfigProvider
       theme={{
+        // algorithm: theme.defaultAlgorithm,
+        // type: "dark",
         token: {
           size: "large",
           borderRadius: 2,

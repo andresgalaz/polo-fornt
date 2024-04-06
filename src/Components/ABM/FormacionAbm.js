@@ -3,13 +3,20 @@ import { Form, Button, Flex, Modal, Select, Input, Row, Col, Table } from "antd"
 // import { EditOutlined } from "@ant-design/icons";
 import FormacionTable from "./FormacionTable";
 import AxiosService from "../../Helpers/AxiosService";
+import FormacionForm from "./FormacionForm";
+
+let formacionJugadoresData;
 
 function FormacionAbm() {
   const [form] = Form.useForm();
   const [state, setstate] = useState([]);
-  // const [formValues, setFormValues] = useState();
-  const [open, setOpen] = useState(false);
+  const [formHeadValues, setFormHeadValues] = useState({});
+  const [formJugadorValues, setFormJugadorValues] = useState({});
+  const [nueva, setNueva] = useState(false);
+  const [openBusca, setOpenBusca] = useState(false);
+  const [openJugador, setOpenJugador] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [equipos, setEquipos] = useState([]);
   const [temporadas, setTemporadas] = useState([]);
 
   useEffect(
@@ -27,20 +34,13 @@ function FormacionAbm() {
     form.setFieldsValue({ cPais });
   };
 
-  const getData = async (idFormacion) => {
-    const { data: dataTem } = await AxiosService.get("temporada", modal);
-    // Arma un par [value / label] con mas información
-    const dataCb = dataTem.reduce((acum, curr) => {
-      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
-      return acum;
-    }, []);
-    setTemporadas(dataCb);
+  const getEquipo = async (v) => {
+    const { data } = await AxiosService.get(`equipo/${v}`, modal);
+    const cCategoria = data[0].cCategoria;
+    form.setFieldsValue({ cCategoria });
+  };
 
-    if (!idFormacion) return;
-    // const cUrlRequest = "formacion/equipo?" + new URLSearchParams({ fFormacion: idFormacion }).toString();
-    // const { data } = await AxiosService.get(cUrlRequest, modal);
-    const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
-
+  const totales = (data) => {
     let HCPInicial = 0,
       HCPequilibrio = 0,
       HCPfinal = 0,
@@ -63,12 +63,37 @@ function FormacionAbm() {
       nhandicapvotado_jugadores: HCPvotadoJugadores,
     });
     setstate(data);
+  };
 
-    form.setFieldsValue({
-      cEquipo: data[0].cEquipo,
+  const getData = async (idFormacion) => {
+    const { data: dataTem } = await AxiosService.get("temporada", modal);
+    // Arma un par [value / label] con mas información
+    const dataCb = dataTem.reduce((acum, curr) => {
+      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
+      return acum;
+    }, []);
+    setTemporadas(dataCb);
+
+    const { data: dataEqu } = await AxiosService.get("equipo", modal);
+    setEquipos(dataEqu);
+
+    if (!idFormacion) return;
+    const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
+    formacionJugadoresData = [...data];
+    totales(data);
+
+    // Alguno de estos 2 es redundante
+    setFormHeadValues({
+      ptpequipo: data[0].ftpequipo,
       cTpCategoria: data[0].cCategoria,
       fTpTemporada: data[0].ftemporada,
     });
+    // Alguno de estos 2 es redundante
+    form.setFieldsValue({
+      ptpequipo: data[0].ftpequipo,
+      fTpTemporada: data[0].ftemporada,
+    });
+    getEquipo(data[0].ftpequipo);
     getTemporada(data[0].ftemporada);
   };
 
@@ -85,7 +110,7 @@ function FormacionAbm() {
       >
         <FormacionTable
           onOk={async (rec) => {
-            setOpen(false);
+            setOpenBusca(false);
             getData(rec.fformacion);
           }}
         />
@@ -93,17 +118,49 @@ function FormacionAbm() {
     );
   };
 
+  const FormacionFormModal = ({ open, grabar, onCancel }) => {
+    const [formInstance, setFormInstance] = useState();
+    return (
+      <Modal
+        open={open}
+        title="JUgador de la Formación"
+        width={"80%"}
+        maskClosable={false}
+        okText="Aceptar"
+        cancelText="Cancelar"
+        okButtonProps={{
+          autoFocus: true,
+        }}
+        onCancel={onCancel}
+        destroyOnClose
+        onOk={async () => {
+          try {
+            const values = await formInstance?.validateFields();
+            formInstance?.resetFields();
+            grabar(values);
+          } catch (error) {
+            console.error("Failed:", error);
+          }
+        }}
+      >
+        <FormacionForm
+          initialValues={formJugadorValues}
+          onFormInstanceReady={(instance) => {
+            setFormInstance(instance);
+          }}
+        />
+      </Modal>
+    );
+  };
+
   const abrir = (rec) => {
-    setOpen(true);
+    setNueva(false);
+    setOpenBusca(true);
     // setFormValues(rec);
   };
 
   const copiar = () => {
-    console.log("Copiar:", state);
-    modal.warning({
-      title: "Formaciones - Copiar",
-      content: <>En construcción</>,
-    });
+    setNueva(true);
   };
 
   const editar = () => {
@@ -129,6 +186,25 @@ function FormacionAbm() {
     },
   ];
 
+  const filterOptionEquipo = (input, option) => (option?.cnombre ?? "").toLowerCase().includes(input.toLowerCase());
+  const grabarJUgador = async (rec) => {
+    console.log("grabarJUgador:", rec);
+    setOpenJugador(false);
+    const {
+      data: [jugador],
+    } = await AxiosService.get(`jugador/${rec.ftpjugador}`, modal);
+    const data = formacionJugadoresData;
+    data[rec.idx].ftpjugador = rec.ftpjugador;
+    data[rec.idx].cJugador = jugador.cnombre;
+    data[rec.idx].nhandicap = rec.nhandicap;
+    data[rec.idx].nhandicapequilibrio = rec.nhandicapequilibrio;
+    data[rec.idx].nhandicapfinal = rec.nhandicapfinal;
+    data[rec.idx].nhandicapvotado = rec.nhandicapvotado;
+    data[rec.idx].nhandicapvotado_jugadores = rec.nhandicapvotado_jugadores;
+    // Se copia para no destruir el original
+    totales([...data]);
+  };
+
   return (
     <div>
       <Flex justify="flex-end" gap="large">
@@ -143,18 +219,28 @@ function FormacionAbm() {
         </Button>
       </Flex>
       {contextHolder}
-      <FormacionTableModal open={open} onCancel={() => setOpen(false)} />
+      <FormacionTableModal open={openBusca} onCancel={() => setOpenBusca(false)} />
+      <FormacionFormModal open={openJugador} grabar={grabarJUgador} onCancel={() => setOpenJugador(false)} />
+
       <h2 className="centered">Formaciones</h2>
 
       <Form layout="vertical" form={form} name="form_in_modal">
         <Row>
           <Col sm={14}>
-            <Form.Item name="cEquipo" label="Equipo" rules={[{ required: true }]}>
-              <Input disabled={true} style={{ width: "90%" }} />
+            <Form.Item name="ptpequipo" label="Equipo" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                disabled={nueva === false}
+                options={equipos}
+                style={{ width: "90%" }}
+                onChange={getEquipo}
+                filterOption={filterOptionEquipo}
+                fieldNames={{ value: "ptpequipo", label: "cnombre" }}
+              />
             </Form.Item>
           </Col>
           <Col sm={10}>
-            <Form.Item name="cTpCategoria" label="Categoria" rules={[{ required: true }]}>
+            <Form.Item name="cCategoria" label="Categoria" rules={[{ required: true }]}>
               <Input disabled={true} />
             </Form.Item>
           </Col>
@@ -172,7 +258,23 @@ function FormacionAbm() {
           </Col>
         </Row>
       </Form>
-      <Table rowKey="pkFormacion" columns={columns} dataSource={state} pagination={false} />
+      <Table
+        rowKey="pkFormacion"
+        columns={columns}
+        dataSource={state}
+        pagination={false}
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              // Fila de totales
+              if (rowIndex === 4) return;
+              // Filas de jugadores
+              setOpenJugador(true);
+              setFormJugadorValues({ idx: rowIndex, ...record });
+            },
+          };
+        }}
+      />
     </div>
   );
 }
