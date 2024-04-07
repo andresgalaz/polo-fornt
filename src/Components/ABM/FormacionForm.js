@@ -19,7 +19,7 @@ export default function FormacionForm({ initialValues, onFormInstanceReady }) {
     []
   );
 
-  const filterOptionJugador = (input, option) => (option?.cnombre ?? "").toLowerCase().includes(input.toLowerCase());
+  const filterOptionJugador = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
     <Form layout="vertical" form={form} name="form_in_modal" initialValues={initialValues}>
@@ -34,10 +34,10 @@ export default function FormacionForm({ initialValues, onFormInstanceReady }) {
           </Form.Item>
         </Col>
         <Col sm={10}>
-          <Form.Item name="ftpjugador" label="Nombre">
+          <Form.Item name="fJugador" label="Nombre">
             <Select
               options={jugadores}
-              fieldNames={{ value: "ptpjugador", label: "cnombre" }}
+              fieldNames={{ value: "pJugador", label: "cNombre" }}
               showSearch
               filterOption={filterOptionJugador}
               style={{ width: "90%" }}
@@ -47,27 +47,27 @@ export default function FormacionForm({ initialValues, onFormInstanceReady }) {
       </Row>
       <Row>
         <Col sm={4}>
-          <Form.Item name="nhandicap" label="HCP Inicial">
+          <Form.Item name="nHandicap" label="HCP Inicial">
             <InputNumber />
           </Form.Item>
         </Col>
         <Col sm={4}>
-          <Form.Item name="nhandicapequilibrio" label="HCP Equilibrio">
+          <Form.Item name="nHandicapEquilibrio" label="HCP Equilibrio">
             <InputNumber />
           </Form.Item>
         </Col>
         <Col sm={4}>
-          <Form.Item name="nhandicapfinal" label="HCP Final">
+          <Form.Item name="nHandicapFinal" label="HCP Final">
             <InputNumber />
           </Form.Item>
         </Col>
         <Col sm={4}>
-          <Form.Item name="nhandicapvotado" label="HCP Votadol">
+          <Form.Item name="nHandicapVotado" label="HCP Votado">
             <InputNumber />
           </Form.Item>
         </Col>
         <Col sm={4}>
-          <Form.Item name="nhandicapvotado_jugadores" label="HCP Votado Jugador">
+          <Form.Item name="nHandicapVotadoJugadores" label="HCP Vot.Jugador">
             <InputNumber />
           </Form.Item>
         </Col>

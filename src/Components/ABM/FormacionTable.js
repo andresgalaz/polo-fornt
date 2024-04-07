@@ -61,12 +61,11 @@ export default function FormacionTable({ onOk }) {
   };
 
   const seleccionar = (rec) => {
-    console.log(rec);
     onOk(rec);
   };
 
   const columns = [
-    { title: "Id.", dataIndex: "fformacion", key: "fformacion" },
+    { title: "Id.", dataIndex: "fFormacion", key: "fFormacion" },
     { title: "Equipo", dataIndex: "cEquipo", key: "cEquipo" },
     { title: "Tipo Categoria", dataIndex: "tpcategoria", key: "tpcategoria" },
     { title: "Categoria", dataIndex: "cCategoria", key: "cCategoria" },
@@ -137,12 +136,11 @@ export default function FormacionTable({ onOk }) {
           onRow={(record, rowIndex) => {
             return {
               onClick: (event) => {
-                console.log(rowIndex, event);
                 seleccionar(record);
               },
             };
           }}
-          rowKey="fformacion"
+          rowKey="uuid"
           className="time-table-row-select"
           rowClassName={"custom-row"}
         />

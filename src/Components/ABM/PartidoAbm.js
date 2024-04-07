@@ -1,9 +1,8 @@
-import { Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Modal, Row, Select, Table } from "antd";
+import { Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Row, Table } from "antd";
 import React from "react";
 
 export default function PartidoAbm() {
   const [form] = Form.useForm();
-  const [modal, contextHolder] = Modal.useModal();
   const buscar = () => {};
   const crear = () => {};
   const grabar = () => {};
@@ -15,13 +14,13 @@ export default function PartidoAbm() {
   const columnsEq1 = [
     { key: "1", title: "Equipo 1", dataIndex: "posicion" },
     { key: "2", title: "Nombre", dataIndex: "cJugador" },
-    { key: "3", title: "HCP", dataIndex: "nhandicap", align: "right" },
+    { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
     { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
   ];
   const columnsEq2 = [
     { key: "1", title: "Equipo 2", dataIndex: "posicion" },
     { key: "2", title: "Nombre", dataIndex: "cJugador" },
-    { key: "3", title: "HCP", dataIndex: "nhandicap", align: "right" },
+    { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
     { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
   ];
 
@@ -54,7 +53,7 @@ export default function PartidoAbm() {
           Grabar Formación
         </Button>
       </Flex>
-      {contextHolder}
+
       <h2 className="centered">Partidos</h2>
       <Card title="Datos" type="inner" style={{ width: "90%" }}>
         <Form layout="vertical" form={form} name="form_in_modal">
