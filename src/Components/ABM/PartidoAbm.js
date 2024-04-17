@@ -1,92 +1,211 @@
-import { Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Row, Table } from "antd";
-import React from "react";
+import { Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Modal, Row, Select, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import PartidoTable from "./PartidoTable";
+import AxiosService from "../../Helpers/AxiosService";
+import FechaHlp from "../../Helpers/FechaHlp";
+
+// let PartidoData;
 
 export default function PartidoAbm() {
   const [form] = Form.useForm();
-  const buscar = () => {};
-  const crear = () => {};
-  const grabar = () => {};
+  const [openBusca, setOpenBusca] = useState(false);
+  const [modal, contextHolder] = Modal.useModal();
+  const [abiertos, setAbiertos] = useState([]);
+  const [equipos, setEquipos] = useState([]);
+  const [equipoGanador, setEquipoGanador] = useState([]);
+  const [temporadas, setTemporadas] = useState([]);
+  // const [formValues, setFormValues] = useState({});
+  const [formacionEquipo1, setFormacionEquipo1] = useState([]);
+  const [formacionEquipo2, setFormacionEquipo2] = useState([]);
+  const [bBotonGrabar, setbBotonGrabar] = useState(false);
+
+  useEffect(
+    () => {
+      // onFormInstanceReady(form);
+      getAbiertos();
+      getTemporadas();
+      getEquipos();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const buscaPartido = () => {
+    setOpenBusca(true);
+  };
+
+  const nuevoPartido = () => {
+    form.resetFields();
+    setbBotonGrabar(true);
+    setFormacionEquipo1([]);
+    setFormacionEquipo2([]);
+    setEquipoGanador(equipos);
+  };
+  const grabarPartido = async () => {
+    try {
+      const values = await form.validateFields();
+      console.log("Success:", values);
+      const resp = await AxiosService.put("partido", values, modal);
+      console.log(resp);
+    } catch (errorInfo) {
+      console.log("Failed:", errorInfo);
+    }
+  };
   const grabarFormacion = () => {};
   const renderBoolean = (value) => {
     return <Checkbox checked={value}></Checkbox>;
   };
 
-  const columnsEq1 = [
+  const getTemporadas = async () => {
+    const { data: dataTem } = await AxiosService.get("temporada", modal);
+    // Arma un par [value / label] con mas información
+    const dataCb = dataTem.reduce((acum, curr) => {
+      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
+      return acum;
+    }, []);
+    setTemporadas(dataCb);
+  };
+
+  const getEquipos = async () => {
+    const { data } = await AxiosService.get("equipo", modal);
+    setEquipos(data);
+  };
+
+  const getAbiertos = async () => {
+    const { data } = await AxiosService.get("abierto", modal);
+    setAbiertos(data);
+  };
+
+  const buildEquipoGanador = (equipo1, equipo2) => {
+    const arr = [];
+    const elemEquipo1 = equipos.find((val) => val.pEquipo === equipo1);
+    const elemEquipo2 = equipos.find((val) => val.pEquipo === equipo2);
+
+    if (elemEquipo1) arr.push(elemEquipo1);
+    if (elemEquipo2) arr.push(elemEquipo2);
+    setEquipoGanador(arr);
+  };
+
+  const getData = async (idPartido) => {
+    if (!idPartido) return;
+    const {
+      data: [partido],
+    } = await AxiosService.get(`partido/${idPartido}`, modal);
+    partido.dPartido = FechaHlp.fromString(partido.dPartido);
+    partido.bFinal = partido.bFinal === 1 ? true : false;
+    // PartidoData = partido;
+    buildEquipoGanador(partido.fEquipo1, partido.fEquipo2);
+    form.setFieldsValue(partido);
+    console.log("partido: ", partido);
+
+    // Fomracion de equipos
+    const { data: formacion1 } = await AxiosService.get(`partido/formacion/${idPartido}/1`, modal);
+    const { data: formacion2 } = await AxiosService.get(`partido/formacion/${idPartido}/2`, modal);
+    setFormacionEquipo1(formacion1);
+    setFormacionEquipo2(formacion2);
+    setbBotonGrabar(true);
+  };
+
+  const PartidoTableModal = ({ open, onCancel }) => {
+    return (
+      <Modal
+        open={open}
+        title="Seleccione la Formación"
+        width={"90%"}
+        cancelText="Cancelar"
+        okButtonProps={{ style: { display: "none" } }}
+        onCancel={onCancel}
+        destroyOnClose
+      >
+        <PartidoTable
+          onOk={async (rec) => {
+            setOpenBusca(false);
+            getData(rec.pPartido);
+          }}
+        />
+      </Modal>
+    );
+  };
+
+  const handleFormValuesChange = (changedValues) => {
+    const formFieldName = Object.keys(changedValues)[0];
+    if (formFieldName === "fEquipo1" || formFieldName === "fEquipo2") {
+      buildEquipoGanador(form.getFieldValue().fEquipo1, form.getFieldValue().fEquipo2);
+      form.setFieldValue("fEquipoGanadorAbierto", undefined);
+      form.setFieldValue("fEquipoGanadorHandicap", undefined);
+    }
+    if (formFieldName === "fEquipo1") setFormacionEquipo1([]);
+    if (formFieldName === "fEquipo2") setFormacionEquipo2([]);
+  };
+  const filterOptionEquipo = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
+  const colsFormacion = [
     { key: "1", title: "Equipo 1", dataIndex: "posicion" },
     { key: "2", title: "Nombre", dataIndex: "cJugador" },
     { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
     { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
   ];
-  const columnsEq2 = [
-    { key: "1", title: "Equipo 2", dataIndex: "posicion" },
-    { key: "2", title: "Nombre", dataIndex: "cJugador" },
-    { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
-    { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
-  ];
-
-  const dataEq1 = [
-    { posicion: "Jugador 1", bTitular: false },
-    { posicion: "Jugador 2", bTitular: false },
-    { posicion: "Jugador 3", bTitular: false },
-    { posicion: "Jugador 4", bTitular: false },
-  ];
-  const dataEq2 = [
-    { posicion: "Jugador 1", bTitular: false },
-    { posicion: "Jugador 2", bTitular: false },
-    { posicion: "Jugador 3", bTitular: false },
-    { posicion: "Jugador 4", bTitular: true },
-  ];
 
   return (
     <div>
+      {contextHolder}
       <Flex justify="flex-end" gap="large">
-        <Button type="primary" onClick={buscar}>
+        <Button type="primary" onClick={buscaPartido}>
           Buscar
         </Button>
-        <Button type="primary" onClick={crear}>
+        <Button type="primary" onClick={nuevoPartido}>
           Nuevo
         </Button>
-        <Button type="primary" onClick={grabar}>
+        <Button type="primary" disabled={!bBotonGrabar} onClick={grabarPartido}>
           Grabar
         </Button>
-        <Button type="primary" onClick={grabarFormacion}>
+        <Button type="primary" disabled={true} onClick={grabarFormacion}>
           Grabar Formación
         </Button>
       </Flex>
+      <PartidoTableModal open={openBusca} onCancel={() => setOpenBusca(false)} />
 
       <h2 className="centered">Partidos</h2>
+
       <Card title="Datos" type="inner" style={{ width: "90%" }}>
-        <Form layout="vertical" form={form} name="form_in_modal">
+        <Form layout="vertical" form={form} name="form_partido" onValuesChange={handleFormValuesChange}>
           <Row>
             <Col sm={8}>
-              <Form.Item name="cTemporada" label="Temporada" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
+              <Form.Item name="fTemporada" label="Temporada" rules={[{ required: true }]}>
+                <Select options={temporadas} style={{ width: "90%" }} />
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="cFecha" label="Fecha" rules={[{ required: true }]}>
-                <DatePicker
-                  onChange={(v) => {
-                    console.log("Fecha", v);
-                  }}
+              <Form.Item name="dPartido" label="Fecha" rules={[{ required: true }]}>
+                <DatePicker />
+              </Form.Item>
+            </Col>
+            <Col sm={8}></Col>
+          </Row>
+          <Row>
+            <Col sm={8}>
+              <Form.Item name="fAbierto" label="Abierto" rules={[{ required: true }]}>
+                <Select
+                  label="Abierto"
+                  options={abiertos}
+                  defaultValue=""
+                  fieldNames={{ label: "cNombre", value: "pAbierto" }}
+                  style={{ width: "220px" }}
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col sm={8}></Col>
+            <Col sm={8}></Col>
+          </Row>
+          <Row>
+            <Col sm={8}>
+              <Form.Item name="fEquipo1" label="Equipo 1" rules={[{ required: true }]}>
+                <Select
+                  showSearch
+                  options={equipos}
+                  style={{ width: "90%" }}
+                  filterOption={filterOptionEquipo}
+                  fieldNames={{ value: "pEquipo", label: "cNombre" }}
                 />
-              </Form.Item>
-            </Col>
-            <Col sm={8}></Col>
-          </Row>
-          <Row>
-            <Col sm={8}>
-              <Form.Item name="pAbierto" label="Abierto" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
-              </Form.Item>
-            </Col>
-            <Col sm={8}></Col>
-            <Col sm={8}></Col>
-          </Row>
-          <Row>
-            <Col sm={8}>
-              <Form.Item name="cEquipo1" label="Equipo 1" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
               </Form.Item>
             </Col>
             <Col sm={8}>
@@ -95,15 +214,21 @@ export default function PartidoAbm() {
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="nAjusteHDP1" label="Ajuste HDP 1" rules={[{ required: true }]}>
+              <Form.Item name="nAjusteHandicapEquipo1" label="Ajuste HDP 1" rules={[{ required: true }]}>
                 <Input style={{ width: "90%" }} />
               </Form.Item>
             </Col>
           </Row>
           <Row>
             <Col sm={8}>
-              <Form.Item name="cEquipo2" label="Equipo 2" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
+              <Form.Item name="fEquipo2" label="Equipo 2" rules={[{ required: true }]}>
+                <Select
+                  showSearch
+                  options={equipos}
+                  style={{ width: "90%" }}
+                  filterOption={filterOptionEquipo}
+                  fieldNames={{ value: "pEquipo", label: "cNombre" }}
+                />
               </Form.Item>
             </Col>
             <Col sm={8}>
@@ -112,56 +237,71 @@ export default function PartidoAbm() {
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="nAjusteHDP2" label="Ajuste HDP 2" rules={[{ required: true }]}>
+              <Form.Item name="nAjusteHandicapEquipo2" label="Ajuste HDP 2" rules={[{ required: true }]}>
                 <Input style={{ width: "90%" }} />
               </Form.Item>
             </Col>
           </Row>
           <Row>
             <Col sm={8}>
-              <Form.Item name="cGanadorAbierto" label="Equipo Ganador Abierto" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
+              <Form.Item name="fEquipoGanadorAbierto" label="Equipo Ganador Abierto" rules={[{ required: true }]}>
+                <Select
+                  options={equipoGanador}
+                  style={{ width: "90%" }}
+                  fieldNames={{ value: "pEquipo", label: "cNombre" }}
+                />
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="cGanadorHDP" label="Equipo Ganador HDP" rules={[{ required: true }]}>
-                <Input style={{ width: "90%" }} />
+              <Form.Item name="fEquipoGanadorHandicap" label="Equipo Ganador HDP" rules={[{ required: true }]}>
+                <Select
+                  options={equipoGanador}
+                  style={{ width: "90%" }}
+                  fieldNames={{ value: "pEquipo", label: "cNombre" }}
+                />
               </Form.Item>
             </Col>
             <Col sm={8}></Col>
           </Row>
           <Row>
             <Col sm={8}>
-              <Form.Item name="bFinal">
-                <Checkbox checked={true} disabled={false} onChange={(e) => console.log("bFinal", e)}>
-                  Es una final
-                </Checkbox>
+              <Form.Item name="bFinal" valuePropName="checked">
+                <Checkbox> Es una final </Checkbox>
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="bEmpateHDP">
-                <Checkbox checked={true} disabled={false} onChange={(e) => console.log("bEmpateHDP", e)}>
-                  Empate en HDP
-                </Checkbox>
+              <Form.Item name="bEmpateHandicap" valuePropName="checked">
+                <Checkbox> Empate en HDP </Checkbox>
               </Form.Item>
             </Col>
             <Col sm={8}>
-              <Form.Item name="bCampeonTC">
-                <Checkbox checked={true} disabled={false} onChange={(e) => console.log("bCampeonTC", e)}>
-                  Es campeón Triple Corona
-                </Checkbox>
+              <Form.Item name="bTripleCorona" valuePropName="checked">
+                <Checkbox> Es campeón Triple Corona </Checkbox>
               </Form.Item>
             </Col>
           </Row>
         </Form>
       </Card>
+
       <Card title="Formaciones" type="inner" style={{ width: "90%" }}>
         <Row>
           <Col sm={12}>
-            <Table columns={columnsEq1} dataSource={dataEq1} pagination={false} style={{ paddingRight: 20 }}></Table>
+            <Table
+              columns={colsFormacion}
+              dataSource={formacionEquipo1}
+              pagination={false}
+              rowKey="uuid"
+              style={{ paddingRight: 20 }}
+            ></Table>
           </Col>
           <Col sm={12}>
-            <Table columns={columnsEq2} dataSource={dataEq2} pagination={false} style={{ paddingleft: 20 }}></Table>
+            <Table
+              columns={colsFormacion}
+              dataSource={formacionEquipo2}
+              pagination={false}
+              rowKey="uuid"
+              style={{ paddingleft: 20 }}
+            ></Table>
           </Col>
         </Row>
       </Card>

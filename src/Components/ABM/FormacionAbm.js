@@ -255,7 +255,7 @@ function FormacionAbm() {
 
       <h2 className="centered">Formaciones</h2>
 
-      <Form layout="vertical" form={form} name="form_in_modal">
+      <Form layout="vertical" form={form} name="form_formacion">
         <Row>
           <Col sm={14}>
             <Form.Item name="fEquipo" label="Equipo" rules={[{ required: true }]}>
