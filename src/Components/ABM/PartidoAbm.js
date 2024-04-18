@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import PartidoTable from "./PartidoTable";
 import AxiosService from "../../Helpers/AxiosService";
 import FechaHlp from "../../Helpers/FechaHlp";
-
-// let PartidoData;
+import PartidoForm from "./PartidoForm";
 
 export default function PartidoAbm() {
   const [form] = Form.useForm();
@@ -18,6 +17,11 @@ export default function PartidoAbm() {
   const [formacionEquipo1, setFormacionEquipo1] = useState([]);
   const [formacionEquipo2, setFormacionEquipo2] = useState([]);
   const [bBotonGrabar, setbBotonGrabar] = useState(false);
+  const [bGrabarFormacion, setbGrabarFormacion] = useState(false);
+  const [nuevo, setNuevo] = useState(false);
+  const [openJugador, setOpenJugador] = useState(false);
+  const [formJugadorValues, setFormJugadorValues] = useState({});
+  const [nEquipo, setnEquipo] = useState(0);
 
   useEffect(
     () => {
@@ -30,8 +34,32 @@ export default function PartidoAbm() {
     []
   );
 
+  const getData = async (idPartido) => {
+    if (!idPartido) return;
+    const {
+      data: [partido],
+    } = await AxiosService.get(`partido/${idPartido}`, modal);
+    partido.dPartido = FechaHlp.fromString(partido.dPartido);
+    partido.bFinal = partido.bFinal === 1 ? true : false;
+    // PartidoData = partido;
+    buildEquipoGanador(partido.fEquipo1, partido.fEquipo2);
+    form.setFieldsValue(partido);
+    console.log("partido: ", partido);
+
+    // Formacion de equipos
+    const { data: formacion1 } = await AxiosService.get(`partido/formacion/${idPartido}/1`, modal);
+    const { data: formacion2 } = await AxiosService.get(`partido/formacion/${idPartido}/2`, modal);
+    // setFormacionEquipo1(formacion1);
+    totales(1, formacion1);
+    // setFormacionEquipo2(formacion2);
+    totales(2, formacion2);
+    setbBotonGrabar(true);
+    setbGrabarFormacion(true);
+  };
+
   const buscaPartido = () => {
     setOpenBusca(true);
+    setNuevo(false);
   };
 
   const nuevoPartido = () => {
@@ -40,18 +68,31 @@ export default function PartidoAbm() {
     setFormacionEquipo1([]);
     setFormacionEquipo2([]);
     setEquipoGanador(equipos);
+    setbGrabarFormacion(false);
+    setNuevo(true);
   };
   const grabarPartido = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Success:", values);
-      const resp = await AxiosService.put("partido", values, modal);
-      console.log(resp);
+      values["nuevo"] = nuevo;
+      const {
+        data: { pPartido },
+      } = await AxiosService.put("partido", values, modal);
+      getData(pPartido);
     } catch (errorInfo) {
       console.log("Failed:", errorInfo);
     }
   };
-  const grabarFormacion = () => {};
+  const grabarFormacion = async () => {
+    const idPartido = form.getFieldValue("pPartido");
+    // Graba los dos equipos Formacion de equipos
+    await AxiosService.put(
+      `partido/formacion/${idPartido}`,
+      { equipo1: formacionEquipo1, equipo2: formacionEquipo2 },
+      modal
+    );
+    nuevoPartido();
+  };
   const renderBoolean = (value) => {
     return <Checkbox checked={value}></Checkbox>;
   };
@@ -86,24 +127,55 @@ export default function PartidoAbm() {
     setEquipoGanador(arr);
   };
 
-  const getData = async (idPartido) => {
-    if (!idPartido) return;
-    const {
-      data: [partido],
-    } = await AxiosService.get(`partido/${idPartido}`, modal);
-    partido.dPartido = FechaHlp.fromString(partido.dPartido);
-    partido.bFinal = partido.bFinal === 1 ? true : false;
-    // PartidoData = partido;
-    buildEquipoGanador(partido.fEquipo1, partido.fEquipo2);
-    form.setFieldsValue(partido);
-    console.log("partido: ", partido);
+  const handleFormValuesChange = (changedValues) => {
+    const formFieldName = Object.keys(changedValues)[0];
+    if (formFieldName === "fEquipo1" || formFieldName === "fEquipo2") {
+      buildEquipoGanador(form.getFieldValue().fEquipo1, form.getFieldValue().fEquipo2);
+      form.setFieldValue("fEquipoGanadorAbierto", undefined);
+      form.setFieldValue("fEquipoGanadorHandicap", undefined);
+    }
+    if (formFieldName === "fEquipo1") setFormacionEquipo1([]);
+    if (formFieldName === "fEquipo2") setFormacionEquipo2([]);
+  };
+  const filterOptionEquipo = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
+  const colsFormacion = [
+    { key: "1", title: "Equipo 1", dataIndex: "posicion" },
+    { key: "2", title: "Nombre", dataIndex: "cJugador" },
+    { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
+    { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
+  ];
 
-    // Fomracion de equipos
-    const { data: formacion1 } = await AxiosService.get(`partido/formacion/${idPartido}/1`, modal);
-    const { data: formacion2 } = await AxiosService.get(`partido/formacion/${idPartido}/2`, modal);
-    setFormacionEquipo1(formacion1);
-    setFormacionEquipo2(formacion2);
-    setbBotonGrabar(true);
+  const totales = (nEquipo, data) => {
+    if (!nEquipo || (nEquipo !== 1 && nEquipo !== 2)) return;
+    // Si está la linea de totales se elimina
+    if (data.length === 4) data.push({ posicion: "Total" });
+
+    let nHandicap = 0;
+    for (var i = 0; i < 4; i++) {
+      data[i].posicion = `Jugador ${i + 1}`;
+      nHandicap += data[i].nHandicap;
+    }
+    data[4].nHandicap = nHandicap;
+    // setstate(data);
+    if (nEquipo === 1) setFormacionEquipo1(data);
+    if (nEquipo === 2) setFormacionEquipo2(data);
+  };
+
+  const grabarJugador = async (rec) => {
+    if (nEquipo !== 1 && nEquipo !== 2) return;
+    setOpenJugador(false);
+    const {
+      data: [jugador],
+    } = await AxiosService.get(`jugador/${rec.fJugador}`, modal);
+    const data = nEquipo === 1 ? formacionEquipo1 : formacionEquipo2;
+    data[rec.idx].fJugador = rec.fJugador;
+    data[rec.idx].cJugador = jugador.cNombre;
+    data[rec.idx].nHandicap = rec.nHandicap;
+    data[rec.idx].bTitular = rec.bTitular;
+    console.log("TOTALES");
+    // Se copia para no destruir el original
+    totales(nEquipo, data);
+    setnEquipo(0);
   };
 
   const PartidoTableModal = ({ open, onCancel }) => {
@@ -127,23 +199,40 @@ export default function PartidoAbm() {
     );
   };
 
-  const handleFormValuesChange = (changedValues) => {
-    const formFieldName = Object.keys(changedValues)[0];
-    if (formFieldName === "fEquipo1" || formFieldName === "fEquipo2") {
-      buildEquipoGanador(form.getFieldValue().fEquipo1, form.getFieldValue().fEquipo2);
-      form.setFieldValue("fEquipoGanadorAbierto", undefined);
-      form.setFieldValue("fEquipoGanadorHandicap", undefined);
-    }
-    if (formFieldName === "fEquipo1") setFormacionEquipo1([]);
-    if (formFieldName === "fEquipo2") setFormacionEquipo2([]);
+  const PartidoFormModal = ({ open, grabar, onCancel }) => {
+    const [formInstance, setFormInstance] = useState();
+    return (
+      <Modal
+        open={open}
+        title={`Jugador del Equipo ${nEquipo}`}
+        width={"400px"}
+        maskClosable={false}
+        okText="Aceptar"
+        cancelText="Cancelar"
+        okButtonProps={{
+          autoFocus: true,
+        }}
+        onCancel={onCancel}
+        destroyOnClose
+        onOk={async () => {
+          try {
+            const values = await formInstance?.validateFields();
+            formInstance?.resetFields();
+            grabar(values);
+          } catch (error) {
+            console.error("Failed:", error);
+          }
+        }}
+      >
+        <PartidoForm
+          initialValues={formJugadorValues}
+          onFormInstanceReady={(instance) => {
+            setFormInstance(instance);
+          }}
+        />
+      </Modal>
+    );
   };
-  const filterOptionEquipo = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
-  const colsFormacion = [
-    { key: "1", title: "Equipo 1", dataIndex: "posicion" },
-    { key: "2", title: "Nombre", dataIndex: "cJugador" },
-    { key: "3", title: "HCP", dataIndex: "nHandicap", align: "right" },
-    { key: "4", title: "Titular", dataIndex: "bTitular", render: (value) => renderBoolean(value) },
-  ];
 
   return (
     <div>
@@ -158,11 +247,12 @@ export default function PartidoAbm() {
         <Button type="primary" disabled={!bBotonGrabar} onClick={grabarPartido}>
           Grabar
         </Button>
-        <Button type="primary" disabled={true} onClick={grabarFormacion}>
+        <Button type="primary" disabled={!bGrabarFormacion} onClick={grabarFormacion}>
           Grabar Formación
         </Button>
       </Flex>
       <PartidoTableModal open={openBusca} onCancel={() => setOpenBusca(false)} />
+      <PartidoFormModal open={openJugador} grabar={grabarJugador} onCancel={() => setOpenJugador(false)} />
 
       <h2 className="centered">Partidos</h2>
 
@@ -292,6 +382,18 @@ export default function PartidoAbm() {
               pagination={false}
               rowKey="uuid"
               style={{ paddingRight: 20 }}
+              onRow={(record, rowIndex) => {
+                return {
+                  onClick: (event) => {
+                    // Fila de totales
+                    if (rowIndex === 4) return;
+                    // Filas de jugadores
+                    setOpenJugador(true);
+                    setnEquipo(1);
+                    setFormJugadorValues({ idx: rowIndex, ...record });
+                  },
+                };
+              }}
             ></Table>
           </Col>
           <Col sm={12}>
@@ -301,6 +403,18 @@ export default function PartidoAbm() {
               pagination={false}
               rowKey="uuid"
               style={{ paddingleft: 20 }}
+              onRow={(record, rowIndex) => {
+                return {
+                  onClick: (event) => {
+                    // Fila de totales
+                    if (rowIndex === 4) return;
+                    // Filas de jugadores
+                    setOpenJugador(true);
+                    setnEquipo(2);
+                    setFormJugadorValues({ idx: rowIndex, ...record });
+                  },
+                };
+              }}
             ></Table>
           </Col>
         </Row>
