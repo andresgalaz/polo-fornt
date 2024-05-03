@@ -20,9 +20,35 @@ export default function PartidosForm({ initialValues, onFormInstanceReady }) {
   );
 
   const filterOptionJugador = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
+  const handleFormValuesChange = async (changedValues) => {
+    const formFieldName = Object.keys(changedValues)[0];
+    const formFieldValue = Object.values(changedValues)[0];
+    console.log(initialValues.fTemporada);
+    console.log(changedValues);
+    if (formFieldName === "fJugador") {
+      const cParams = new URLSearchParams({
+        fTemporada: initialValues.fTemporada,
+        fJugador: formFieldValue,
+      }).toString();
+      const {
+        data: [jugadorData],
+      } = await AxiosService.get(`formacion?${cParams}`, modal);
+
+      if (jugadorData) {
+        form.setFieldValue("nHandicap", jugadorData.nHandicap);
+        form.setFieldValue("bTitular", false);
+      }
+    }
+  };
 
   return (
-    <Form layout="vertical" form={form} name="form_in_modal" initialValues={initialValues}>
+    <Form
+      layout="vertical"
+      form={form}
+      name="form_in_modal"
+      initialValues={initialValues}
+      onValuesChange={handleFormValuesChange}
+    >
       {contextHolder}
       <Form.Item name="idx" label="idx" hidden={true}>
         <Input />

@@ -5,14 +5,15 @@ import FormacionTable from "./FormacionTable";
 import AxiosService from "../../Helpers/AxiosService";
 import FormacionForm from "./FormacionForm";
 
-let formacionJugadoresData;
+// let formacionJugadoresData;
 
 function FormacionAbm() {
   const [form] = Form.useForm();
   const [state, setstate] = useState([]);
-  const [formHeadValues, setFormHeadValues] = useState({});
+  // const [formHeadValues, setFormHeadValues] = useState({});
   const [formJugadorValues, setFormJugadorValues] = useState({});
   const [nueva, setNueva] = useState(false);
+  const [idFormacion, setIdFormacion] = useState(0);
   const [openBusca, setOpenBusca] = useState(false);
   const [openJugador, setOpenJugador] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
@@ -28,16 +29,35 @@ function FormacionAbm() {
     []
   );
 
+  const buildFormacion = async () => {
+    const fEquipo = form.getFieldValue("fEquipo");
+    const fTemporada = form.getFieldValue("fTemporada");
+    if (!fEquipo || !fTemporada) return;
+    // Cuenta los jugadores distintos de TDB
+    const nCountJugador = state.reduce((acc, cur, idx) => (idx < 4 && cur.fJugador !== 0 ? ++acc : acc), 0);
+    if (nCountJugador > 0) return;
+    // Si no se han ingrsado jugadores se busca a última formación en la
+    // temporada anterior
+    const { data } = await AxiosService.get(`formacion/ultima/${fEquipo}/${fTemporada}/`, modal);
+    // formacionJugadoresData = [...data];
+    console.log("buildFormacion:");
+    totales(data);
+  };
+
   const getTemporada = async (v) => {
+    if (!v) return;
     const { data } = await AxiosService.get(`temporada/${v}`, modal);
     const cPais = data[0].cPais;
     form.setFieldsValue({ cPais });
+    // buildFormacion();
   };
 
   const getEquipo = async (v) => {
+    if (!v) return;
     const { data } = await AxiosService.get(`equipo/${v}`, modal);
     const cCategoria = data[0].cCategoria;
     form.setFieldsValue({ cCategoria });
+    // buildFormacion();
   };
 
   const totales = (data) => {
@@ -46,6 +66,21 @@ function FormacionAbm() {
       HCPfinal = 0,
       HCPvotado = 0,
       HCPvotadoJugadores = 0;
+    if (data.length > 4) data.length = 4;
+    else if (data.length < 4) {
+      for (let i = data.length; i < 4; i++) {
+        data.push({
+          posicion: `Jugador ${i}`,
+          fJugador: 0,
+          cJugador: "TBD",
+          nHandicap: 0,
+          nHandicapEquilibrio: 0,
+          nHandicapFinal: 0,
+          nHandicapVotado: 0,
+          nHandicapVotadoJugadores: 0,
+        });
+      }
+    }
     data.forEach((rec, idx) => {
       rec["posicion"] = `Jugador ${idx + 1}`;
       HCPInicial += rec["nHandicap"];
@@ -62,10 +97,11 @@ function FormacionAbm() {
       nHandicapVotado: HCPvotado,
       nHandicapVotadoJugadores: HCPvotadoJugadores,
     });
-    setstate(data);
+    setstate([...data]);
   };
 
   const getData = async (idFormacion) => {
+    setIdFormacion(idFormacion);
     const { data: dataTem } = await AxiosService.get("temporada", modal);
     // Arma un par [value / label] con mas información
     const dataCb = dataTem.reduce((acum, curr) => {
@@ -79,15 +115,19 @@ function FormacionAbm() {
 
     if (!idFormacion) return;
     const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
-    formacionJugadoresData = [...data];
+    // formacionJugadoresData = [...data];
+    console.log("getData PRE:", data.length);
     totales(data);
+    console.log("getData POST:", data.length);
+    setstate(data);
+    console.log("DATA:", data);
 
     // Alguno de estos 2 es redundante
-    setFormHeadValues({
+    /*setFormHeadValues({
       fEquipo: data[0].fEquipo,
       cTpCategoria: data[0].cCategoria,
       fTemporada: data[0].fTemporada,
-    });
+    });*/
     // Alguno de estos 2 es redundante
     form.setFieldsValue({
       fEquipo: data[0].fEquipo,
@@ -163,10 +203,15 @@ function FormacionAbm() {
     setNueva(true);
   };
 
+  const grabarHabilitado = () => {
+    return form.getFieldValue("fEquipo") !== undefined && form.getFieldValue("fTemporada") !== undefined;
+  };
+
   const grabarFormacion = async () => {
     // Valida jugador repetido dentro de la misma formación
     const duplicates = state.reduce((pre, cur, idx) => {
-      if (state.some((itSm, idxSm) => itSm.fJugador === cur.fJugador && idx !== idxSm)) pre.push(cur);
+      if (state.some((itSm, idxSm) => itSm.fJugador !== 0 && itSm.fJugador === cur.fJugador && idx !== idxSm))
+        pre.push(cur);
       return pre;
     }, []);
     if (duplicates.length > 0) {
@@ -192,14 +237,23 @@ function FormacionAbm() {
         });
       return pre;
     }, []);
-    const { fFormacion } = formacionJugadoresData[0];
-    const { fEquipo, fTemporada } = formHeadValues;
-    await AxiosService.put("formacion", { nueva, fFormacion, fEquipo, fTemporada, jugadores }, modal, () => {
-      // Una ves recibida la respuesta OK
-      form.resetFields();
-      setNueva(false);
-      setstate([]);
-    });
+    const { fEquipo, fTemporada } = form.getFieldsValue(); // formHeadValues;
+    await AxiosService.put(
+      "formacion",
+      { nueva, fFormacion: idFormacion, fEquipo, fTemporada, jugadores },
+      modal,
+      () => {
+        // Una ves recibida la respuesta OK
+        cancelar();
+      }
+    );
+  };
+
+  const cancelar = () => {
+    form.resetFields();
+    setNueva(false);
+    setIdFormacion(0);
+    setstate([]);
   };
 
   const columns = [
@@ -224,7 +278,7 @@ function FormacionAbm() {
     const {
       data: [jugador],
     } = await AxiosService.get(`jugador/${rec.fJugador}`, modal);
-    const data = formacionJugadoresData;
+    const data = state;
     data[rec.idx].fJugador = rec.fJugador;
     data[rec.idx].cJugador = jugador.cNombre;
     data[rec.idx].nHandicap = rec.nHandicap;
@@ -233,27 +287,37 @@ function FormacionAbm() {
     data[rec.idx].nHandicapVotado = rec.nHandicapVotado;
     data[rec.idx].nHandicapVotadoJugadores = rec.nHandicapVotadoJugadores;
     // Se copia para no destruir el original
-    totales([...data]);
+    console.log("grabarJugador:");
+    totales(data);
+  };
+
+  const getTitulo = () => {
+    if (nueva) return "Nueva Formación";
+    if (idFormacion && idFormacion !== 0) return `Formación - ${idFormacion}`;
+    return "Formaciones";
   };
 
   return (
     <div>
       <Flex justify="flex-end" gap="large">
-        <Button type="primary" onClick={buscarFormacion}>
-          Buscar Formación
+        <Button type="primary" onClick={buscarFormacion} disabled={nueva}>
+          Buscar
         </Button>
-        <Button type="primary" onClick={nuevaFormacion}>
-          Nueva Formación
+        <Button type="primary" onClick={nuevaFormacion} disabled={nueva}>
+          Nueva
         </Button>
-        <Button type="primary" onClick={grabarFormacion}>
-          Grabar
+        <Button type="primary" danger={nueva} onClick={grabarFormacion} disabled={!grabarHabilitado()}>
+          {nueva ? "Crear" : "Grabar"}
+        </Button>
+        <Button type="primary" onClick={cancelar}>
+          Cancelar
         </Button>
       </Flex>
       {contextHolder}
       <FormacionTableModal open={openBusca} onCancel={() => setOpenBusca(false)} />
       <FormacionFormModal open={openJugador} grabar={grabarJugador} onCancel={() => setOpenJugador(false)} />
 
-      <h2 className="centered">Formaciones</h2>
+      <h2 className="centered">{getTitulo()}</h2>
 
       <Form layout="vertical" form={form} name="form_formacion">
         <Row>
@@ -261,10 +325,13 @@ function FormacionAbm() {
             <Form.Item name="fEquipo" label="Equipo" rules={[{ required: true }]}>
               <Select
                 showSearch
-                disabled={nueva === false}
+                disabled={!nueva}
                 options={equipos}
                 style={{ width: "90%" }}
-                onChange={getEquipo}
+                onChange={(v) => {
+                  getEquipo(v);
+                  buildFormacion();
+                }}
                 filterOption={filterOptionEquipo}
                 fieldNames={{ value: "pEquipo", label: "cNombre" }}
               />
@@ -279,7 +346,15 @@ function FormacionAbm() {
         <Row>
           <Col sm={14}>
             <Form.Item name="fTemporada" label="Temporada" rules={[{ required: true }]}>
-              <Select options={temporadas} style={{ width: "90%" }} onChange={getTemporada} />
+              <Select
+                options={temporadas}
+                style={{ width: "90%" }}
+                onChange={(v) => {
+                  getTemporada(v);
+                  buildFormacion();
+                }}
+                disabled={!nueva}
+              />
             </Form.Item>
           </Col>
           <Col sm={10}>
@@ -297,6 +372,7 @@ function FormacionAbm() {
         onRow={(record, rowIndex) => {
           return {
             onClick: (event) => {
+              console.log("onRow", state, rowIndex);
               // Fila de totales
               if (rowIndex === 4) return;
               // Filas de jugadores

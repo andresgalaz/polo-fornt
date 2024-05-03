@@ -5,7 +5,7 @@ import { SelectOutlined } from "@ant-design/icons";
 
 let formacionesData;
 export default function FormacionTable({ onOk }) {
-  const [filtro] = useState({ pCategoria: "", pTemporada: "", cEquipo: "" });
+  const [filtro] = useState({ fCategoria: "", fTemporada: "", cEquipo: "" });
   const [loading, setloading] = useState(true);
   const [modal, contextHolder] = Modal.useModal();
   const [categorias, setCategorias] = useState([]);
@@ -52,7 +52,7 @@ export default function FormacionTable({ onOk }) {
   };
 
   const getData = async () => {
-    const cUrlRequest = "formacion/equipo?" + new URLSearchParams(filtro).toString();
+    const cUrlRequest = "formacion/listEquipo?" + new URLSearchParams(filtro).toString();
     const { data } = await AxiosService.get(cUrlRequest, modal, () => {
       setloading(false);
     });
@@ -105,7 +105,7 @@ export default function FormacionTable({ onOk }) {
             options={categorias}
             defaultValue=""
             onChange={(v) => {
-              filtro.pCategoria = v;
+              filtro.fCategoria = v;
               getData();
             }}
             fieldNames={{ label: "cDescripcion", value: "pCategoria" }}
@@ -119,10 +119,9 @@ export default function FormacionTable({ onOk }) {
             options={temporadas}
             defaultValue=""
             onChange={(v) => {
-              filtro.pTemporada = v;
+              filtro.fTemporada = v;
               getData();
             }}
-            // fieldNames={{ label: "Descripcion", value: "pTemporada" }}
             style={{ width: "300px" }}
           ></Select>
         </Space>
