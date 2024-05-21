@@ -1,11 +1,11 @@
-import { Button, Flex, Input, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Input, InputNumber, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
 import { SelectOutlined } from "@ant-design/icons";
 
 let formacionesData;
 export default function FormacionTable({ onOk }) {
-  const [filtro] = useState({ fCategoria: "", fTemporada: "", cEquipo: "" });
+  const [filtro] = useState({ fCategoria: "", fTemporada: "", nTemporada: "", cEquipo: "" });
   const [loading, setloading] = useState(true);
   const [modal, contextHolder] = Modal.useModal();
   const [categorias, setCategorias] = useState([]);
@@ -111,6 +111,16 @@ export default function FormacionTable({ onOk }) {
             fieldNames={{ label: "cDescripcion", value: "pCategoria" }}
             style={{ width: "220px" }}
           ></Select>
+        </Space>
+        <Space>
+          Año
+          <InputNumber
+            onChange={(v) => {
+              filtro.nTemporada = v;
+              getData();
+            }}
+            style={{ width: "60px" }}
+          ></InputNumber>
         </Space>
         <Space>
           Temporadas

@@ -23,10 +23,15 @@ export default class AxiosService {
     }
   }
 
-  static async put(ruta, values, modal, fnCb) {
+  static async put(ruta, values, modal, fnCb, isLongRqeuest) {
+    const configCall = {};
+    if (isLongRqeuest) {
+      configCall.timeout = 600 * 1000; // 5 minutes
+    }
+
     try {
       const apiServer = process.env.REACT_APP_API_SERVER + ruta;
-      const res = await axios.post(apiServer, values);
+      const res = await axios.post(apiServer, values, configCall);
       if (fnCb) fnCb(res);
       return res;
     } catch (e) {

@@ -21,21 +21,22 @@ import PartidoForm from "./PartidoForm";
 
 export default function PartidoAbm() {
   const [form] = Form.useForm();
-  const [idPartido, setIdPartido] = useState(0);
-  const [openBusca, setOpenBusca] = useState(false);
-  const [modal, contextHolder] = Modal.useModal();
   const [abiertos, setAbiertos] = useState([]);
+  const [bBotonGrabar, setbBotonGrabar] = useState(false);
   const [equipos, setEquipos] = useState([]);
   const [equipoGanador, setEquipoGanador] = useState([]);
-  const [temporadas, setTemporadas] = useState([]);
   const [formacionEquipo1, setFormacionEquipo1] = useState([]);
   const [formacionEquipo2, setFormacionEquipo2] = useState([]);
-  const [bBotonGrabar, setbBotonGrabar] = useState(false);
-  const [nuevo, setNuevo] = useState(false);
-  const [openJugador, setOpenJugador] = useState(false);
   const [formJugadorValues, setFormJugadorValues] = useState({});
-  // TODO AGV: Ver si se puede llevar en los datos del form de jugadores
-  const [nEquipo, setnEquipo] = useState(0);
+  const [idPartido, setIdPartido] = useState(0);
+  const [modal, contextHolder] = Modal.useModal();
+  const [nEquipo, setnEquipo] = useState(0); // TODO AGV: Ver si se puede llevar en los datos del form de jugadores
+  const [nuevo, setNuevo] = useState(false);
+  const [openBusca, setOpenBusca] = useState(false);
+  const [openJugador, setOpenJugador] = useState(false);
+  const [sumaHCP1, setSumaHCP1] = useState(0);
+  const [sumaHCP2, setSumaHCP2] = useState(0);
+  const [temporadas, setTemporadas] = useState([]);
 
   useEffect(
     () => {
@@ -87,7 +88,7 @@ export default function PartidoAbm() {
     setFormacionEquipo2([]);
   };
 
-  const CargaFormacionEquipo = async (nEquipo, fEquipo) => {
+  const cargaFormacionEquipo = async (nEquipo, fEquipo) => {
     const fTemporada = form.getFieldValue("fTemporada");
 
     // Si cambio el valor del equipo
@@ -98,8 +99,8 @@ export default function PartidoAbm() {
     data.forEach((e) => {
       e.bTitular = true;
     });
-    // setFormacionEquipo1(formacion1);
-    totales(nEquipo, data);
+    const nSumaHCP = await getSumaHCP(nEquipo, fEquipo, fTemporada);
+    totales(nEquipo, data, nSumaHCP);
   };
 
   const colsFormacion = [
@@ -154,10 +155,22 @@ export default function PartidoAbm() {
     // Formacion de equipos
     const { data: formacion1 } = await AxiosService.get(`partido/formacion/${idPartido}/1`, modal);
     const { data: formacion2 } = await AxiosService.get(`partido/formacion/${idPartido}/2`, modal);
+    // Suma HCP equipo original
+    const suma1 = await getSumaHCP(1, partido.fEquipo1, partido.fTemporada);
+    const suma2 = await getSumaHCP(2, partido.fEquipo2, partido.fTemporada);
 
-    totales(1, formacion1);
-    totales(2, formacion2);
+    totales(1, formacion1, suma1);
+    totales(2, formacion2, suma2);
+
     setbBotonGrabar(true);
+  };
+
+  const getSumaHCP = async (nEquipo, fEquipo, fTemporada) => {
+    const { data: suma } = await AxiosService.get(`formacion/sumaHandicap/${fEquipo}/${fTemporada}`, modal);
+    if (nEquipo === 1) setSumaHCP1(suma);
+    if (nEquipo === 2) setSumaHCP2(suma);
+    console.log(`Suma ${nEquipo}/${fEquipo}/${fTemporada}: ${suma}`);
+    return suma;
   };
 
   const getTemporadas = async () => {
@@ -190,7 +203,9 @@ export default function PartidoAbm() {
     data[rec.idx].bTitular = rec.bTitular;
     // Actualiza el total
     data[4].nHandicap = data.reduce((pre, cur, idx) => (idx < 4 ? pre + cur.nHandicap : pre), 0);
-    form.setFieldValue("nAjusteHandicapEquipo" + nEquipo, data[4].nHandicap);
+
+    const nSumaHCP = nEquipo === 1 ? sumaHCP1 : sumaHCP2;
+    form.setFieldValue("nAjusteHandicapEquipo" + nEquipo, data[4].nHandicap - nSumaHCP);
 
     AjusteGanadorHandicap();
     setnEquipo(0);
@@ -233,7 +248,7 @@ export default function PartidoAbm() {
     if ("fTemporada,fAbierto".includes(formFieldName)) getEquipos();
 
     if (formFieldName === "fEquipo1" || formFieldName === "fEquipo2") {
-      CargaFormacionEquipo(formFieldName === "fEquipo1" ? 1 : 2, Object.values(changedValues)[0]);
+      cargaFormacionEquipo(formFieldName === "fEquipo1" ? 1 : 2, Object.values(changedValues)[0]);
       buildEquipoGanador(equipos, form.getFieldValue().fEquipo1, form.getFieldValue().fEquipo2);
       form.setFieldValue("fEquipoGanadorAbierto", undefined);
       form.setFieldValue("fEquipoGanadorHandicap", undefined);
@@ -328,7 +343,7 @@ export default function PartidoAbm() {
     return <Checkbox checked={value}></Checkbox>;
   };
 
-  const totales = async (nEquipo, data) => {
+  const totales = async (nEquipo, data, sumaHCP) => {
     if (!nEquipo || (nEquipo !== 1 && nEquipo !== 2)) return;
 
     if (data.length < 4) {
@@ -357,11 +372,11 @@ export default function PartidoAbm() {
     // setstate(data);
     if (nEquipo === 1) {
       setFormacionEquipo1([...data]);
-      form.setFieldValue("nAjusteHandicapEquipo1", nHandicapTotal);
+      form.setFieldValue("nAjusteHandicapEquipo1", nHandicapTotal - sumaHCP);
     }
     if (nEquipo === 2) {
       setFormacionEquipo2([...data]);
-      form.setFieldValue("nAjusteHandicapEquipo2", nHandicapTotal);
+      form.setFieldValue("nAjusteHandicapEquipo2", nHandicapTotal - sumaHCP);
     }
     AjusteGanadorHandicap();
   };

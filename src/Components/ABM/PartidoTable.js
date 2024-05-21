@@ -23,56 +23,6 @@ export default function PartidoTable({ onOk }) {
     [filtro]
   );
 
-  const getTemporadas = async () => {
-    const { data } = await AxiosService.get("temporada", modal);
-    if (!data) return;
-    // Arma un par [value / label] con mas información
-    const dataCb = data.reduce((acum, curr) => {
-      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
-      return acum;
-    }, []);
-    dataCb.unshift({ value: "", label: "Todas" });
-    setTemporadas(dataCb);
-  };
-
-  const getAbiertos = async () => {
-    const { data } = await AxiosService.get("abierto", modal);
-    if (!data) return;
-    // const data = (await axios.get(process.env.REACT_APP_API_SERVER + "abierto")).data;
-    data.unshift({ pAbierto: "", cNombre: "Todos" });
-    setAbiertos(data);
-  };
-
-  const searchTable = () => {
-    const searchKey = filtro.cEquipo;
-    var data = partidosData.filter(
-      (rec) =>
-        rec["cEquipo1"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase()) ||
-        rec["cEquipo2"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
-    );
-    setState(data);
-  };
-
-  const getData = async () => {
-    const cUrlRequest = "partido?" + new URLSearchParams(filtro).toString();
-    const { data } = await AxiosService.get(cUrlRequest, modal, () => {
-      setloading(false);
-    });
-    partidosData = data;
-    searchTable();
-  };
-
-  const seleccionar = (rec) => {
-    onOk(rec);
-  };
-
-  const getFullDate = (f) => {
-    if (!f) return "";
-    // YYYY-MM-DD a DD/MM/YYYY
-    const a = f.substr(0, 10).split("-");
-    return `${a[2]}/${a[1]}/${a[0]}`;
-  };
-
   const columns = [
     { title: "Id.", dataIndex: "pPartido", key: "pPartido" },
     { title: "Fecha", dataIndex: "dPartido", key: "dPartido", render: (fec) => getFullDate(fec) },
@@ -91,6 +41,56 @@ export default function PartidoTable({ onOk }) {
       },
     },
   ];
+
+  const getAbiertos = async () => {
+    const { data } = await AxiosService.get("abierto", modal);
+    if (!data) return;
+    // const data = (await axios.get(process.env.REACT_APP_API_SERVER + "abierto")).data;
+    data.unshift({ pAbierto: "", cNombre: "Todos" });
+    setAbiertos(data);
+  };
+
+  const getData = async () => {
+    const cUrlRequest = "partido?" + new URLSearchParams(filtro).toString();
+    const { data } = await AxiosService.get(cUrlRequest, modal, () => {
+      setloading(false);
+    });
+    partidosData = data;
+    searchTable();
+  };
+
+  const getFullDate = (f) => {
+    if (!f) return "";
+    // YYYY-MM-DD a DD/MM/YYYY
+    const a = f.substr(0, 10).split("-");
+    return `${a[2]}/${a[1]}/${a[0]}`;
+  };
+
+  const getTemporadas = async () => {
+    const { data } = await AxiosService.get("temporada", modal);
+    if (!data) return;
+    // Arma un par [value / label] con mas información
+    const dataCb = data.reduce((acum, curr) => {
+      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
+      return acum;
+    }, []);
+    dataCb.unshift({ value: "", label: "Todas" });
+    setTemporadas(dataCb);
+  };
+
+  const searchTable = () => {
+    const searchKey = filtro.cEquipo;
+    var data = partidosData.filter(
+      (rec) =>
+        rec["cEquipo1"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase()) ||
+        rec["cEquipo2"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
+    );
+    setState(data);
+  };
+
+  const seleccionar = (rec) => {
+    onOk(rec);
+  };
 
   return (
     <div>
