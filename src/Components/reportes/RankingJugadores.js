@@ -4,16 +4,13 @@ import AxiosService from "../../Helpers/AxiosService";
 
 export default function RankingJugadores() {
   const [state, setstate] = useState([]);
-  const [filtro] = useState({ pCategoria: "", pTemporada: "" });
-  const [loading, setloading] = useState(true);
+  const [filtro] = useState({ fTemporada: "" });
+  const [loading, setLoading] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
-  const [categorias, setCategorias] = useState([]);
   const [temporadas, setTemporadas] = useState([]);
-  // const apiServer = process.env.REACT_APP_API_SERVER + "reporte/ranking-jugadores";
-
   useEffect(
     () => {
-      getData();
+      getTemporadas();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -27,57 +24,32 @@ export default function RankingJugadores() {
       acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
       return acum;
     }, []);
-    dataCb.unshift({ value: "", label: "Todas" });
     setTemporadas(dataCb);
   };
 
-  const getCategorias = async () => {
-    const { data } = await AxiosService.get("categoria", modal);
-    if (!data) return;
-    // const data = (await axios.get(process.env.REACT_APP_API_SERVER + "categoria")).data;
-    data.unshift({ pCategoria: "", cDescripcion: "Todas" });
-    setCategorias(data);
-  };
-
   const getData = async () => {
-    await getTemporadas();
-    await getCategorias();
-
+    if (filtro.fTemporada === "") return;
+    setLoading(true);
     const cUrlRequest = "reporte/ranking-jugadores?" + new URLSearchParams(filtro).toString();
-    const { data } = await AxiosService.get(cUrlRequest, modal, () => {
-      setloading(false);
-    });
+    const { data } = await AxiosService.get(cUrlRequest, modal);
     setstate(data);
+    setLoading(false);
   };
 
   const columns = [
-    { title: "Id.Temporada", dataIndex: "id_temporada", key: "id_temporada" },
-    { title: "Temporada", dataIndex: "temporada", key: "temporada" },
-    { title: "Equipo", dataIndex: "equipo", key: "equipo" },
-    { title: "Categoria", dataIndex: "categoria", key: "categoria" },
-    { title: "Jugador", dataIndex: "jugador", key: "jugador" },
-    { title: "Puntos", dataIndex: "puntos", key: "puntos" },
+    { title: "Id.Temporada", dataIndex: "nTemporada", key: "id_temporada" },
+    { title: "Temporada", dataIndex: "cTemporada", key: "temporada" },
+    { title: "Equipo", dataIndex: "cEquipo", key: "equipo" },
+    { title: "Categoria", dataIndex: "cTpCategoria", key: "categoria" },
+    { title: "Jugador", dataIndex: "cJugador", key: "jugador" },
+    { title: "Puntos", dataIndex: "nPuntos", key: "puntos" },
   ];
 
   return (
     <div>
       <h2 className="centered">Ranking de Jugadores</h2>
 
-      <Flex justify="space-between">
-        <Space>
-          Categoría
-          <Select
-            label="Categoría"
-            options={categorias}
-            defaultValue=""
-            onChange={(v) => {
-              filtro.pCategoria = v;
-              getData();
-            }}
-            fieldNames={{ label: "cDescripcion", value: "pCategoria" }}
-            style={{ width: "240px" }}
-          ></Select>
-        </Space>
+      <Flex justify="space-between" style={{ padding: 20 }}>
         <Space>
           Temporadas
           <Select
@@ -85,7 +57,7 @@ export default function RankingJugadores() {
             options={temporadas}
             defaultValue=""
             onChange={(v) => {
-              filtro.pTemporada = v;
+              filtro.fTemporada = v;
               getData();
             }}
             // fieldNames={{ label: "Descripcion", value: "pTemporada" }}
@@ -95,7 +67,11 @@ export default function RankingJugadores() {
       </Flex>
 
       {contextHolder}
-      {loading ? "Cargando ..." : <Table columns={columns} dataSource={state} rowKey="id" />}
+      {loading ? (
+        "Cargando ..."
+      ) : (
+        <Table columns={columns} dataSource={state} rowKey="id" pagination={{ pageSize: 20 }} />
+      )}
     </div>
   );
 }
