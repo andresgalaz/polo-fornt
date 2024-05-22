@@ -30,7 +30,7 @@ import HcpVariacionJugadores from "./Components/reportes/HcpVariacionJugadores";
 import RankingEquipos from "./Components/reportes/RankingEquipos";
 import RankingJugadores from "./Components/reportes/RankingJugadores";
 import ResultadoPartidos from "./Components/reportes/ResultadoPartidos";
-import ControlTable from "./Components/procesos/ControlTable";
+import ProcesosTable from "./Components/procesos/ProcesosTable";
 
 const { Header, Sider, Content } = Layout;
 
@@ -251,7 +251,7 @@ const App = () => {
               <Route path="/abiertos-abm" element={<AbiertosAbm />} />
               <Route path="/acerca-de" element={<AcercaDe />} />
               <Route path="/categoria-abm" element={<CategoriaAbm />} />
-              <Route path="/control-table" element={<ControlTable />} />
+              <Route path="/control-table" element={<ProcesosTable />} />
               <Route path="/equipo-abm" element={<EquipoAbm />} />
               <Route path="/formacion-abm" element={<FormacionAbm />} />
               <Route path="/formacion-temporadas" element={<FormacionTemporadas />} />

@@ -2,7 +2,7 @@ import { Alert, Button, Flex, Modal, Select, Space, Spin, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
 
-export default function ControlTable() {
+export default function ProcesosTable() {
   const [categorias, setCategorias] = useState([]);
   const [filtro] = useState({ fCategoria: "", fTemporada: "" });
   const [modal, contextHolder] = Modal.useModal();
@@ -35,12 +35,12 @@ export default function ControlTable() {
       null,
       modal,
       () => {
-        setProcesando(false);
         getDesviacion();
         getPromedio();
       },
       true
     );
+    setProcesando(false);
   };
 
   const colsDesvio = [
@@ -103,12 +103,12 @@ export default function ControlTable() {
       null,
       modal,
       () => {
-        setProcesando(false);
         getDesviacion();
         getPromedio();
       },
       true
     );
+    setProcesando(false);
   };
 
   return (
