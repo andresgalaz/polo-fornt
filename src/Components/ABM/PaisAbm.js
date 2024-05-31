@@ -51,7 +51,6 @@ function PaisAbm() {
       >
         <PaisForm
           initialValues={formValues}
-          isInsert={formValues === undefined}
           onFormInstanceReady={(instance) => {
             setFormInstance(instance);
           }}
@@ -61,8 +60,9 @@ function PaisAbm() {
   };
 
   const abrir = (rec) => {
-    setOpen(true);
+    setNuevo(rec === undefined);
     setFormValues(rec);
+    setOpen(true);
   };
 
   const cancelar = () => {
@@ -102,7 +102,6 @@ function PaisAbm() {
         <Button
           type="primary"
           onClick={() => {
-            setNuevo(true);
             abrir();
           }}
         >
