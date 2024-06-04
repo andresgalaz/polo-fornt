@@ -4,6 +4,7 @@ import {
   DatabaseOutlined,
   DeliveredProcedureOutlined,
   FormOutlined,
+  HomeOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
@@ -61,7 +62,14 @@ const App = () => {
       <Layout>
         <Layout>
           <Header style={{ color: colorBgContainer, textAlign: "center" }}>
-            <h2 style={{ margin: 0 }}>Polo Handicap</h2>
+            <h2
+              style={{ margin: 0 }}
+              onClick={() => {
+                navigate("/");
+              }}
+            >
+              Polo Handicap
+            </h2>
           </Header>
         </Layout>
         <Layout>
@@ -84,6 +92,14 @@ const App = () => {
               selectedKeys={highlight()}
               defaultSelectedKeys={["ABM-MENU"]}
               items={[
+                {
+                  key: "HOME",
+                  icon: <HomeOutlined />,
+                  label: "Home",
+                  onClick: () => {
+                    navigate("/");
+                  },
+                },
                 {
                   key: "ABM-MENU",
                   icon: <DatabaseOutlined />,
