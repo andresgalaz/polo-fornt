@@ -96,7 +96,7 @@ export default function AbiertosAbm() {
   ];
 
   function searchTable(searchStr) {
-    if (searchStr) setFiltro(searchStr);
+    if (searchStr !== undefined) setFiltro(searchStr);
     else searchStr = filtro;
     const searchKeys = searchStr.split(" ");
     var tempdata = tableData.filter((fila) => {
