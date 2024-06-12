@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button, Flex, Modal, Table } from "antd";
+import { Button, Flex, Input, Modal, Space, Table } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import PuntajeForm from "./PuntajeForm";
 import AxiosService from "../../Helpers/AxiosService";
 
+let tableData;
 export default function PuntajeAbm() {
   const [state, setstate] = useState([]);
+  const [filtro, setFiltro] = useState("");
   const [nuevo, setNuevo] = useState(false);
   const [loading, setloading] = useState(true);
   const [formValues, setFormValues] = useState();
@@ -24,7 +26,8 @@ export default function PuntajeAbm() {
     const { data } = await AxiosService.get("puntaje", modal, () => {
       setloading(false);
     });
-    setstate(data);
+    tableData = data;
+    searchTable();
   };
 
   const PuntajeFormModal = ({ open, grabar, cancelar }) => {
@@ -105,17 +108,37 @@ export default function PuntajeAbm() {
     },
   ];
 
+  function searchTable(searchStr) {
+    if (searchStr) setFiltro(searchStr);
+    else searchStr = filtro;
+    const searchKeys = searchStr.split(" ");
+    var tempdata = tableData.filter((fila) => {
+      let bOK = true;
+      for (let i = 0; i < searchKeys.length; i++)
+        bOK = bOK && JSON.stringify(fila).toLocaleLowerCase().includes(searchKeys[i].toLocaleLowerCase());
+      return bOK;
+    });
+    setstate(tempdata);
+  }
+
   return (
     <div>
-      <Flex justify="flex-end">
-        <Button
-          type="primary"
-          onClick={() => {
-            abrir();
-          }}
-        >
-          Nuevo
-        </Button>
+      <Flex justify="space-between" style={{ padding: 20 }}>
+        <Space>
+          Buscar
+          <Input
+            placeholder="search students"
+            style={{ width: "140%" }}
+            onChange={(e) => {
+              searchTable(e.target.value);
+            }}
+          />
+        </Space>
+        <Space>
+          <Button type="primary" onClick={() => abrir()}>
+            Nuevo
+          </Button>
+        </Space>
       </Flex>
       {contextHolder}
       <PuntajeFormModal open={open} grabar={grabar} cancelar={cancelar} />
