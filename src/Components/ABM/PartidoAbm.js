@@ -28,6 +28,7 @@ export default function PartidoAbm() {
   const [formacionEquipo1, setFormacionEquipo1] = useState([]);
   const [formacionEquipo2, setFormacionEquipo2] = useState([]);
   const [formJugadorValues, setFormJugadorValues] = useState({});
+  const [historia, setHistoria] = useState({ fTemporada: null, dPartido: null, fAbierto: null });
   const [idPartido, setIdPartido] = useState(0);
   const [modal, contextHolder] = Modal.useModal();
   const [nEquipo, setnEquipo] = useState(0); // TODO AGV: Ver si se puede llevar en los datos del form de jugadores
@@ -216,7 +217,7 @@ export default function PartidoAbm() {
     const nGolesEquipo2 = form.getFieldValue("nGolesEquipo2");
     if (nGolesEquipo1 && nGolesEquipo2 && nGolesEquipo1 === nGolesEquipo2) {
       modal.error({
-        title: "Mensaje del Servidor",
+        title: "Validación datos partido",
         content: <>Debe haber un equipo ganador del abierto</>,
       });
     }
@@ -236,6 +237,13 @@ export default function PartidoAbm() {
         title: "Partido",
         content: <>El partido se ha grabado en forma exitosa. ID={pPartido}</>,
       });
+      if (nuevo) {
+        const fTemporada = form.getFieldValue("fTemporada");
+        const dPartido = form.getFieldValue("dPartido");
+        const fAbierto = form.getFieldValue("fAbierto");
+
+        setHistoria({ fTemporada, dPartido, fAbierto });
+      }
       cancelar();
     } catch (errorInfo) {
       console.error("Failed:", errorInfo);
@@ -278,9 +286,14 @@ export default function PartidoAbm() {
   };
 
   const nuevoPartido = () => {
+    console.log(historia);
     cancelar();
     setEquipoGanador(equipos);
     setNuevo(true);
+
+    form.setFieldValue("fTemporada", historia.fTemporada);
+    form.setFieldValue("dPartido", historia.dPartido); // FechaHlp.fromString(historia.dPartido));
+    form.setFieldValue("fAbierto", historia.fAbierto);
   };
 
   const PartidoFormModal = ({ open, grabar, onCancel }) => {

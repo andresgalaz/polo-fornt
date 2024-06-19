@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Flex, Modal, Select, Input, Row, Col, Table } from "antd";
-// import { EditOutlined } from "@ant-design/icons";
 import FormacionTable from "./FormacionTable";
 import AxiosService from "../../Helpers/AxiosService";
 import FormacionForm from "./FormacionForm";
 
-// let formacionJugadoresData;
-
 function FormacionAbm() {
   const [form] = Form.useForm();
   const [state, setstate] = useState([]);
-  // const [formHeadValues, setFormHeadValues] = useState({});
   const [formJugadorValues, setFormJugadorValues] = useState({});
   const [nueva, setNueva] = useState(false);
   const [idFormacion, setIdFormacion] = useState(0);
@@ -22,141 +18,64 @@ function FormacionAbm() {
 
   useEffect(
     () => {
-      // onFormInstanceReady(form);
       getData();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
+  const buscarFormacion = (rec) => {
+    setNueva(false);
+    setOpenBusca(true);
+  };
+
   const buildFormacion = async () => {
     const fEquipo = form.getFieldValue("fEquipo");
     const fTemporada = form.getFieldValue("fTemporada");
     if (!fEquipo || !fTemporada) return;
+    // Valida que no exista el equipo para la misma temporada
+    const cUrlParams = new URLSearchParams({ fTemporada, fEquipo }).toString();
+    const { data: verif } = await AxiosService.get(`formacion?${cUrlParams}`, modal);
+    console.log(verif);
+    if (verif && verif.length > 0)
+      modal.warning({
+        title: "Validacicion Formacioones",
+        content: <>Ya existe una formación para este equipo y temporada</>,
+      });
+
     // Cuenta los jugadores distintos de TDB
     const nCountJugador = state.reduce((acc, cur, idx) => (idx < 4 && cur.fJugador !== 0 ? ++acc : acc), 0);
     if (nCountJugador > 0) return;
-    // Si no se han ingrsado jugadores se busca a última formación en la
+    // Si no se han ingrseado jugadores se busca a última formación en la
     // temporada anterior
+
     const { data } = await AxiosService.get(`formacion/ultima/${fEquipo}/${fTemporada}/`, modal);
-    // formacionJugadoresData = [...data];
-    console.log("buildFormacion:");
     totales(data);
   };
 
-  const getTemporada = async (v) => {
-    if (!v) return;
-    const { data } = await AxiosService.get(`temporada/${v}`, modal);
-    const cPais = data[0].cPais;
-    form.setFieldsValue({ cPais });
-    // buildFormacion();
+  const cancelar = () => {
+    form.resetFields();
+    setNueva(false);
+    setIdFormacion(0);
+    setstate([]);
   };
 
-  const getEquipo = async (v) => {
-    if (!v) return;
-    const { data } = await AxiosService.get(`equipo/${v}`, modal);
-    const cCategoria = data[0].cCategoria;
-    form.setFieldsValue({ cCategoria });
-    // buildFormacion();
-  };
+  const columns = [
+    { title: "Posición", dataIndex: "posicion", key: "posicion" },
+    { title: "Nombre", dataIndex: "cJugador", key: "cJugador" },
+    { title: "HCP Inicial", dataIndex: "nHandicap", key: "nHandicap", align: "right" },
+    { title: "HCP Equilibrio", dataIndex: "nHandicapEquilibrio", key: "nHandicapEquilibrio", align: "right" },
+    { title: "HCP Final", dataIndex: "nHandicapFinal", key: "nHandicapFinal", align: "right" },
+    { title: "HCP Votado", dataIndex: "nHandicapVotado", key: "nHandicapVotado", align: "right" },
+    {
+      title: "HCP Votado Jugador",
+      dataIndex: "nHandicapVotadoJugadores",
+      key: "nHandicapVotadoJugadores",
+      align: "right",
+    },
+  ];
 
-  const totales = (data) => {
-    let HCPInicial = 0,
-      HCPequilibrio = 0,
-      HCPfinal = 0,
-      HCPvotado = 0,
-      HCPvotadoJugadores = 0;
-    if (data.length > 4) data.length = 4;
-    else if (data.length < 4) {
-      for (let i = data.length; i < 4; i++) {
-        data.push({
-          posicion: `Jugador ${i}`,
-          fJugador: 0,
-          cJugador: "TBD",
-          nHandicap: 0,
-          nHandicapEquilibrio: 0,
-          nHandicapFinal: 0,
-          nHandicapVotado: 0,
-          nHandicapVotadoJugadores: 0,
-        });
-      }
-    }
-    data.forEach((rec, idx) => {
-      rec["posicion"] = `Jugador ${idx + 1}`;
-      HCPInicial += rec["nHandicap"];
-      HCPequilibrio += rec["nHandicapEquilibrio"];
-      HCPfinal += rec["nHandicapFinal"];
-      HCPvotado += rec["nHandicapVotado"];
-      HCPvotadoJugadores += rec["nHandicapVotadoJugadores"];
-    });
-    data.push({
-      posicion: "Total",
-      nHandicap: HCPInicial,
-      nHandicapEquilibrio: HCPequilibrio,
-      nHandicapFinal: HCPfinal,
-      nHandicapVotado: HCPvotado,
-      nHandicapVotadoJugadores: HCPvotadoJugadores,
-    });
-    setstate([...data]);
-  };
-
-  const getData = async (idFormacion) => {
-    setIdFormacion(idFormacion);
-    const { data: dataTem } = await AxiosService.get("temporada", modal);
-    // Arma un par [value / label] con mas información
-    const dataCb = dataTem.reduce((acum, curr) => {
-      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
-      return acum;
-    }, []);
-    setTemporadas(dataCb);
-
-    const { data: dataEqu } = await AxiosService.get("equipo", modal);
-    setEquipos(dataEqu);
-
-    if (!idFormacion) return;
-    const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
-    // formacionJugadoresData = [...data];
-    console.log("getData PRE:", data.length);
-    totales(data);
-    console.log("getData POST:", data.length);
-    setstate(data);
-    console.log("DATA:", data);
-
-    // Alguno de estos 2 es redundante
-    /*setFormHeadValues({
-      fEquipo: data[0].fEquipo,
-      cTpCategoria: data[0].cCategoria,
-      fTemporada: data[0].fTemporada,
-    });*/
-    // Alguno de estos 2 es redundante
-    form.setFieldsValue({
-      fEquipo: data[0].fEquipo,
-      fTemporada: data[0].fTemporada,
-    });
-    getEquipo(data[0].fEquipo);
-    getTemporada(data[0].fTemporada);
-  };
-
-  const FormacionTableModal = ({ open, onCancel }) => {
-    return (
-      <Modal
-        open={open}
-        title="Seleccione la Formación"
-        width={"90%"}
-        cancelText="Cancelar"
-        okButtonProps={{ style: { display: "none" } }}
-        onCancel={onCancel}
-        destroyOnClose
-      >
-        <FormacionTable
-          onOk={async (rec) => {
-            setOpenBusca(false);
-            getData(rec.fFormacion);
-          }}
-        />
-      </Modal>
-    );
-  };
+  const filterOptionEquipo = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
 
   const FormacionFormModal = ({ open, grabar, onCancel }) => {
     const [formInstance, setFormInstance] = useState();
@@ -193,18 +112,74 @@ function FormacionAbm() {
     );
   };
 
-  const buscarFormacion = (rec) => {
-    setNueva(false);
-    setOpenBusca(true);
-    // setFormValues(rec);
+  const FormacionTableModal = ({ open, onCancel }) => {
+    return (
+      <Modal
+        open={open}
+        title="Seleccione la Formación"
+        width={"90%"}
+        cancelText="Cancelar"
+        okButtonProps={{ style: { display: "none" } }}
+        onCancel={onCancel}
+        destroyOnClose
+      >
+        <FormacionTable
+          onOk={async (rec) => {
+            setOpenBusca(false);
+            getData(rec.fFormacion);
+          }}
+        />
+      </Modal>
+    );
   };
 
-  const nuevaFormacion = () => {
-    setNueva(true);
+  const getData = async (idFormacion) => {
+    setIdFormacion(idFormacion);
+    const { data: dataTem } = await AxiosService.get("temporada", modal);
+    // Arma un par [value / label] con mas información
+    const dataCb = dataTem.reduce((acum, curr) => {
+      acum.push({ value: curr.pTemporada, label: curr.nTemporada + " " + curr.cDescripcion });
+      return acum;
+    }, []);
+    setTemporadas(dataCb);
+
+    const { data: dataEqu } = await AxiosService.get("equipo", modal);
+    setEquipos(dataEqu);
+
+    if (!idFormacion) return;
+    const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
+    console.log("getData PRE:", data.length);
+    totales(data);
+    console.log("getData POST:", data.length);
+    setstate(data);
+    console.log("DATA:", data);
+
+    form.setFieldsValue({
+      fEquipo: data[0].fEquipo,
+      fTemporada: data[0].fTemporada,
+    });
+    getEquipo(data[0].fEquipo);
+    getTemporada(data[0].fTemporada);
   };
 
-  const grabarHabilitado = () => {
-    return form.getFieldValue("fEquipo") !== undefined && form.getFieldValue("fTemporada") !== undefined;
+  const getEquipo = async (v) => {
+    if (!v) return;
+    const { data } = await AxiosService.get(`equipo/${v}`, modal);
+    const cCategoria = data[0].cCategoria;
+    form.setFieldsValue({ cCategoria });
+  };
+
+  const getTemporada = async (v) => {
+    if (!v) return;
+    const { data } = await AxiosService.get(`temporada/${v}`, modal);
+    const cPais = data[0].cPais;
+    form.setFieldsValue({ cPais });
+  };
+
+  const getTitulo = () => {
+    if (nueva) return "Nueva Formación";
+    if (idFormacion && idFormacion !== 0) return `Formación - ${idFormacion}`;
+    return "Formaciones";
   };
 
   const grabarFormacion = async () => {
@@ -249,29 +224,9 @@ function FormacionAbm() {
     );
   };
 
-  const cancelar = () => {
-    form.resetFields();
-    setNueva(false);
-    setIdFormacion(0);
-    setstate([]);
+  const grabarHabilitado = () => {
+    return form.getFieldValue("fEquipo") !== undefined && form.getFieldValue("fTemporada") !== undefined;
   };
-
-  const columns = [
-    { title: "Posición", dataIndex: "posicion", key: "posicion" },
-    { title: "Nombre", dataIndex: "cJugador", key: "cJugador" },
-    { title: "HCP Inicial", dataIndex: "nHandicap", key: "nHandicap", align: "right" },
-    { title: "HCP Equilibrio", dataIndex: "nHandicapEquilibrio", key: "nHandicapEquilibrio", align: "right" },
-    { title: "HCP Final", dataIndex: "nHandicapFinal", key: "nHandicapFinal", align: "right" },
-    { title: "HCP Votado", dataIndex: "nHandicapVotado", key: "nHandicapVotado", align: "right" },
-    {
-      title: "HCP Votado Jugador",
-      dataIndex: "nHandicapVotadoJugadores",
-      key: "nHandicapVotadoJugadores",
-      align: "right",
-    },
-  ];
-
-  const filterOptionEquipo = (input, option) => (option?.cNombre ?? "").toLowerCase().includes(input.toLowerCase());
 
   const grabarJugador = async (rec) => {
     setOpenJugador(false);
@@ -291,10 +246,48 @@ function FormacionAbm() {
     totales(data);
   };
 
-  const getTitulo = () => {
-    if (nueva) return "Nueva Formación";
-    if (idFormacion && idFormacion !== 0) return `Formación - ${idFormacion}`;
-    return "Formaciones";
+  const nuevaFormacion = () => {
+    setNueva(true);
+  };
+
+  const totales = (data) => {
+    let HCPInicial = 0,
+      HCPequilibrio = 0,
+      HCPfinal = 0,
+      HCPvotado = 0,
+      HCPvotadoJugadores = 0;
+    if (data.length > 4) data.length = 4;
+    else if (data.length < 4) {
+      for (let i = data.length; i < 4; i++) {
+        data.push({
+          posicion: `Jugador ${i}`,
+          fJugador: 0,
+          cJugador: "TBD",
+          nHandicap: 0,
+          nHandicapEquilibrio: 0,
+          nHandicapFinal: 0,
+          nHandicapVotado: 0,
+          nHandicapVotadoJugadores: 0,
+        });
+      }
+    }
+    data.forEach((rec, idx) => {
+      rec["posicion"] = `Jugador ${idx + 1}`;
+      HCPInicial += rec["nHandicap"];
+      HCPequilibrio += rec["nHandicapEquilibrio"];
+      HCPfinal += rec["nHandicapFinal"];
+      HCPvotado += rec["nHandicapVotado"];
+      HCPvotadoJugadores += rec["nHandicapVotadoJugadores"];
+    });
+    data.push({
+      posicion: "Total",
+      nHandicap: HCPInicial,
+      nHandicapEquilibrio: HCPequilibrio,
+      nHandicapFinal: HCPfinal,
+      nHandicapVotado: HCPvotado,
+      nHandicapVotadoJugadores: HCPvotadoJugadores,
+    });
+    setstate([...data]);
   };
 
   return (
