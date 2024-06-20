@@ -1,6 +1,8 @@
-import { Flex, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
+import { CSVLink } from "react-csv";
+import ExportHlp from "../../Helpers/ExportHlp";
 
 export default function ResultadoPartidos() {
   const [state, setstate] = useState([]);
@@ -67,7 +69,6 @@ export default function ResultadoPartidos() {
   return (
     <div>
       <h2 className="centered">Resultados de los Partidos</h2>
-
       <Flex justify="space-between" style={{ padding: 20 }}>
         <Space>
           Categoría
@@ -97,8 +98,21 @@ export default function ResultadoPartidos() {
             style={{ width: "240px" }}
           ></Select>
         </Space>
+        {!state || state.length === 0 || loading ? (
+          ""
+        ) : (
+          <Space>
+            <CSVLink
+              data={state}
+              headers={ExportHlp.tableColumn2CvsHeader(columns)}
+              filename={`resultado-partidos-${ExportHlp.fecha()}.csv`}
+              target="_blank"
+            >
+              <Button type="primary">Exportar</Button>
+            </CSVLink>
+          </Space>
+        )}
       </Flex>
-
       {contextHolder}
       {loading ? (
         "Cargando ..."
