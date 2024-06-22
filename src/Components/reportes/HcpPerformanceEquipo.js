@@ -1,6 +1,8 @@
-import { Flex, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
+import { CSVLink } from "react-csv";
+import ExportHlp from "../../Helpers/ExportHlp";
 
 export default function HcpPerformanceEquipo() {
   const [state, setstate] = useState([]);
@@ -102,6 +104,20 @@ export default function HcpPerformanceEquipo() {
             style={{ width: "240px" }}
           ></Select>
         </Space>
+        {!state || state.length === 0 || loading ? (
+          ""
+        ) : (
+          <Space>
+            <CSVLink
+              data={state}
+              headers={ExportHlp.tableColumn2CvsHeader(columns)}
+              filename={`handicap-perfomance-equipos-${ExportHlp.fecha()}.csv`}
+              target="_blank"
+            >
+              <Button type="primary">Exportar</Button>
+            </CSVLink>
+          </Space>
+        )}
       </Flex>
 
       {contextHolder}

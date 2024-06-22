@@ -1,6 +1,8 @@
-import { Flex, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
+import { CSVLink } from "react-csv";
+import ExportHlp from "../../Helpers/ExportHlp";
 
 export default function RankingJugadores() {
   const [state, setstate] = useState([]);
@@ -40,7 +42,7 @@ export default function RankingJugadores() {
     { title: "Id.Temporada", dataIndex: "nTemporada", key: "id_temporada" },
     { title: "Temporada", dataIndex: "cTemporada", key: "temporada" },
     { title: "Equipo", dataIndex: "cEquipo", key: "equipo" },
-    { title: "Categoria", dataIndex: "cTpCategoria", key: "categoria" },
+    // { title: "Categoria", dataIndex: "cTpCategoria", key: "categoria" },
     { title: "Jugador", dataIndex: "cJugador", key: "jugador" },
     { title: "Puntos", dataIndex: "nPuntos", key: "puntos" },
   ];
@@ -64,6 +66,20 @@ export default function RankingJugadores() {
             style={{ width: "240px" }}
           ></Select>
         </Space>
+        {!state || state.length === 0 || loading ? (
+          ""
+        ) : (
+          <Space>
+            <CSVLink
+              data={state}
+              headers={ExportHlp.tableColumn2CvsHeader(columns)}
+              filename={`ranking-jugadores${ExportHlp.fecha()}.csv`}
+              target="_blank"
+            >
+              <Button type="primary">Exportar</Button>
+            </CSVLink>
+          </Space>
+        )}
       </Flex>
 
       {contextHolder}

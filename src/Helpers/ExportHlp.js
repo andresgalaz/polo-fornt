@@ -1,7 +1,7 @@
 export default class ExportHlp {
   static tableColumn2CvsHeader(cols) {
     return cols.reduce((prev, curr, idx) => {
-      const { title: label, key } = curr;
+      const { title: label, dataIndex: key } = curr;
       prev.push({ label, key });
       return prev;
     }, []);
