@@ -294,6 +294,7 @@ export default function PartidoAbm() {
     form.setFieldValue("fTemporada", historia.fTemporada);
     form.setFieldValue("dPartido", historia.dPartido); // FechaHlp.fromString(historia.dPartido));
     form.setFieldValue("fAbierto", historia.fAbierto);
+    getEquipos();
   };
 
   const PartidoFormModal = ({ open, grabar, onCancel }) => {
