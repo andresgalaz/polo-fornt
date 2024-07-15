@@ -213,7 +213,7 @@ function FormacionAbm() {
       return pre;
     }, []);
     const { fEquipo, fTemporada } = form.getFieldsValue(); // formHeadValues;
-    await AxiosService.put(
+    const { data: listJugadoresDup } = await AxiosService.put(
       "formacion",
       { nueva, fFormacion: idFormacion, fEquipo, fTemporada, jugadores },
       modal,
@@ -222,6 +222,17 @@ function FormacionAbm() {
         cancelar();
       }
     );
+    // Arma mensaje WARNING de jugadores duplicados
+    if (listJugadoresDup.length > 0) {
+      let msg = listJugadoresDup.reduce((pre, cur) => {
+        return pre + "\n" + cur.cJugador;
+      }, `Los siguientes jugadores ya están en otro equipo para la misma temporada y categoria ${listJugadoresDup[0].cTpCategoria}:\n`);
+
+      modal.warning({
+        title: "Mensaje del Servidor",
+        content: <div style={{ whiteSpace: "pre-line" }}>{msg}</div>,
+      });
+    }
   };
 
   const grabarHabilitado = () => {
