@@ -5,6 +5,7 @@ import {
   DeliveredProcedureOutlined,
   FormOutlined,
   HomeOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
@@ -32,6 +33,7 @@ import RankingEquipos from "./Components/reportes/RankingEquipos";
 import RankingJugadores from "./Components/reportes/RankingJugadores";
 import ResultadoPartidos from "./Components/reportes/ResultadoPartidos";
 import ProcesosTable from "./Components/procesos/ProcesosTable";
+import LoginForm from "./Components/LoginForm";
 
 const { Header, Sider, Content } = Layout;
 
@@ -40,6 +42,7 @@ const App = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const [isLogged, setIsLogged] = useState(false);
 
   let navigate = useNavigate();
   const selectedKey = useLocation().pathname;
@@ -86,172 +89,184 @@ const App = () => {
                 color: "white",
               }}
             ></Button>
-            <Menu
-              theme="dark"
-              mode="inline"
-              selectedKeys={highlight()}
-              defaultSelectedKeys={["ABM-MENU"]}
-              items={[
-                {
-                  key: "HOME",
-                  icon: <HomeOutlined />,
-                  label: "Home",
-                  onClick: () => {
-                    navigate("/");
+            {isLogged ? (
+              <Menu
+                theme="dark"
+                mode="inline"
+                selectedKeys={highlight()}
+                defaultSelectedKeys={["ABM-MENU"]}
+                items={[
+                  {
+                    key: "HOME",
+                    icon: <HomeOutlined />,
+                    label: "Home",
+                    onClick: () => {
+                      navigate("/");
+                    },
                   },
-                },
-                {
-                  key: "ABM-MENU",
-                  icon: <DatabaseOutlined />,
-                  label: "ABM",
-                  children: [
-                    {
-                      key: "pais-abm",
-                      icon: <FormOutlined />,
-                      label: "Paises",
-                      onClick: () => {
-                        navigate("/pais-abm");
+                  {
+                    key: "ABM-MENU",
+                    icon: <DatabaseOutlined />,
+                    label: "ABM",
+                    children: [
+                      {
+                        key: "pais-abm",
+                        icon: <FormOutlined />,
+                        label: "Paises",
+                        onClick: () => {
+                          navigate("/pais-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "temporada-abm",
-                      icon: <FormOutlined />,
-                      label: "Temporadas",
-                      onClick: () => {
-                        navigate("/temporada-abm");
+                      {
+                        key: "temporada-abm",
+                        icon: <FormOutlined />,
+                        label: "Temporadas",
+                        onClick: () => {
+                          navigate("/temporada-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "categoria-abm",
-                      icon: <FormOutlined />,
-                      label: "Categorias",
-                      onClick: () => {
-                        navigate("/categoria-abm");
+                      {
+                        key: "categoria-abm",
+                        icon: <FormOutlined />,
+                        label: "Categorias",
+                        onClick: () => {
+                          navigate("/categoria-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "abiertos-abm",
-                      icon: <FormOutlined />,
-                      label: "Abiertos",
-                      onClick: () => {
-                        navigate("/abiertos-abm");
+                      {
+                        key: "abiertos-abm",
+                        icon: <FormOutlined />,
+                        label: "Abiertos",
+                        onClick: () => {
+                          navigate("/abiertos-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "puntaje-abm",
-                      icon: <FormOutlined />,
-                      label: "Puntaje",
-                      onClick: () => {
-                        navigate("/puntaje-abm");
+                      {
+                        key: "puntaje-abm",
+                        icon: <FormOutlined />,
+                        label: "Puntaje",
+                        onClick: () => {
+                          navigate("/puntaje-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "equipo-abm",
-                      icon: <FormOutlined />,
-                      label: "Equipos",
-                      onClick: () => {
-                        navigate("/equipo-abm");
+                      {
+                        key: "equipo-abm",
+                        icon: <FormOutlined />,
+                        label: "Equipos",
+                        onClick: () => {
+                          navigate("/equipo-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "jugador-abm",
-                      icon: <FormOutlined />,
-                      label: "Jugadores",
-                      onClick: () => {
-                        navigate("/jugador-abm");
+                      {
+                        key: "jugador-abm",
+                        icon: <FormOutlined />,
+                        label: "Jugadores",
+                        onClick: () => {
+                          navigate("/jugador-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "formacion-abm",
-                      icon: <FormOutlined />,
-                      label: "Formaciones",
-                      onClick: () => {
-                        navigate("/formacion-abm");
+                      {
+                        key: "formacion-abm",
+                        icon: <FormOutlined />,
+                        label: "Formaciones",
+                        onClick: () => {
+                          navigate("/formacion-abm");
+                        },
                       },
-                    },
-                    {
-                      key: "partidos-abm",
-                      icon: <FormOutlined />,
-                      label: "Partidos",
-                      onClick: () => {
-                        navigate("/partidos-abm");
+                      {
+                        key: "partidos-abm",
+                        icon: <FormOutlined />,
+                        label: "Partidos",
+                        onClick: () => {
+                          navigate("/partidos-abm");
+                        },
                       },
-                    },
-                  ],
-                },
-                {
-                  key: "PROCEDOS",
-                  icon: <SettingOutlined />,
-                  label: "Procesos",
-                  onClick: () => {
-                    navigate("/control-table");
+                    ],
                   },
-                },
-                {
-                  key: "REPORTE-MENU",
-                  icon: <ContainerOutlined />,
-                  label: "Reportes",
-                  children: [
-                    {
-                      key: "ranking-equipos",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "Ranking Equipos y Resultados",
-                      onClick: () => {
-                        navigate("/ranking-equipos");
-                      },
+                  {
+                    key: "PROCEDOS",
+                    icon: <SettingOutlined />,
+                    label: "Procesos",
+                    onClick: () => {
+                      navigate("/control-table");
                     },
-                    {
-                      key: "ranking-jugadores",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "Ranking Jugadores",
-                      onClick: () => {
-                        navigate("/ranking-jugadores");
+                  },
+                  {
+                    key: "REPORTE-MENU",
+                    icon: <ContainerOutlined />,
+                    label: "Reportes",
+                    children: [
+                      {
+                        key: "ranking-equipos",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Ranking Equipos y Resultados",
+                        onClick: () => {
+                          navigate("/ranking-equipos");
+                        },
                       },
-                    },
-                    {
-                      key: "hcp-equipo",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "HCP Performance Equipo",
-                      onClick: () => {
-                        navigate("/hcp-equipo");
+                      {
+                        key: "ranking-jugadores",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Ranking Jugadores",
+                        onClick: () => {
+                          navigate("/ranking-jugadores");
+                        },
                       },
-                    },
-                    {
-                      key: "hcp-performance-jugador",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "HCP Performance Jugador",
-                      onClick: () => {
-                        navigate("/hcp-performance-jugador");
+                      {
+                        key: "hcp-equipo",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "HCP Performance Equipo",
+                        onClick: () => {
+                          navigate("/hcp-equipo");
+                        },
                       },
-                    },
-                    {
-                      key: "hcp-variacion-jugador",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "HCP Variacion Jugador",
-                      onClick: () => {
-                        navigate("/hcp-variacion-jugador");
+                      {
+                        key: "hcp-performance-jugador",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "HCP Performance Jugador",
+                        onClick: () => {
+                          navigate("/hcp-performance-jugador");
+                        },
                       },
-                    },
-                    {
-                      key: "formacion-temporadas",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "Formación Temporadas",
-                      onClick: () => {
-                        navigate("/formacion-temporadas");
+                      {
+                        key: "hcp-variacion-jugador",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "HCP Variacion Jugador",
+                        onClick: () => {
+                          navigate("/hcp-variacion-jugador");
+                        },
                       },
-                    },
-                    {
-                      key: "resultado-partidos",
-                      icon: <DeliveredProcedureOutlined />,
-                      label: "Resultado Partidos",
-                      onClick: () => {
-                        navigate("/resultado-partidos");
+                      {
+                        key: "formacion-temporadas",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Formación Temporadas",
+                        onClick: () => {
+                          navigate("/formacion-temporadas");
+                        },
                       },
+                      {
+                        key: "resultado-partidos",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Resultado Partidos",
+                        onClick: () => {
+                          navigate("/resultado-partidos");
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    key: "SALIR",
+                    icon: <LogoutOutlined />,
+                    label: "Salir",
+                    onClick: () => {
+                      setIsLogged(false);
                     },
-                  ],
-                },
-              ]}
-            />
+                  },
+                ]}
+              />
+            ) : (
+              <div />
+            )}
           </Sider>
           <Content
             style={{
@@ -263,7 +278,7 @@ const App = () => {
             }}
           >
             <Routes>
-              <Route exact path="/" element={<HomePage />} />
+              <Route exact path="/" element={isLogged ? <HomePage /> : <LoginForm onLoginOK={setIsLogged} />} />
               <Route path="/abiertos-abm" element={<AbiertosAbm />} />
               <Route path="/acerca-de" element={<AcercaDe />} />
               <Route path="/categoria-abm" element={<CategoriaAbm />} />
