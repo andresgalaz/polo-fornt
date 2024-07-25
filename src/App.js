@@ -260,6 +260,7 @@ const App = () => {
                     label: "Salir",
                     onClick: () => {
                       setIsLogged(false);
+                      navigate("/");
                     },
                   },
                 ]}
