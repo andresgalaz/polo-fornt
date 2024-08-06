@@ -1,7 +1,7 @@
 import { Button, Form, Input, Modal } from "antd";
 import { LoginOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
-import AuthService from "../Helpers/AuthService";
+import AxiosService from "../Helpers/AxiosService";
 
 export default function LoginForm(props) {
   const [form] = Form.useForm();
@@ -10,6 +10,22 @@ export default function LoginForm(props) {
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
   const [modal, contextHolder] = Modal.useModal();
+
+  const ingresar = async (cUsuario, cPassword) => {
+    const { data } = await AxiosService.put("login/ingresar", { cUsuario, cPassword }, modal, () => {});
+    console.log(data);
+    return data;
+  };
+  const cambiaContrasena = async (cTokenSession, cUsuario, cPassword) => {
+    const { data } = await AxiosService.put(
+      "login/cambiarPassword",
+      { cTokenSession, cUsuario, cPassword },
+      modal,
+      () => {}
+    );
+    console.log(data);
+    return data;
+  };
 
   const conectar = async (e) => {
     props.onLoginOK(false);
@@ -33,38 +49,40 @@ export default function LoginForm(props) {
         });
         return false;
       }
-      const cambio = await AuthService.cambiaContrasena(tokenSession, cUsuario, cPasswordNew1);
+      console.log("tokensesion :", tokenSession);
+      const cambio = await cambiaContrasena(tokenSession, cUsuario, cPasswordNew1);
       console.log(cambio);
       return true;
     }
-    // const x = await e.preventDefault();
-    // console.log(x);
-
-    try {
-      const session = await AuthService.ingresar(cUsuario, cPassword);
-      console.log("Sign in successful", session);
-      if (session) {
-        setTokenSession(session.Session);
-        if (session.ChallengeName === "NEW_PASSWORD_REQUIRED") {
-          modal.error({
-            title: "Login",
-            content: <>Se requiere una nueva contraseña</>,
-          });
-          setNewPasswdReq(true);
-        }
-        props.onLoginOK(true);
-      } else {
-        modal.error({
-          title: "Login",
-          content: <>Usuario o contraseña incorrectos</>,
-        });
-      }
-    } catch (error) {
+    // try {
+    const resp = await ingresar(cUsuario, cPassword);
+    // console.log("Sign in successful", session.AuthenticationResult.IdToken);
+    console.log("tokensesion :", resp.session);
+    if (resp.nuevaPassword) {
+      setTokenSession(resp.session);
       modal.error({
         title: "Login",
-        content: <>Problema con el servidor {error}</>,
+        content: <>Se requiere una nueva contraseña</>,
       });
+      setNewPasswdReq(true);
+      return false;
     }
+    if (!resp.nombre || !resp.grupo) {
+      modal.error({
+        title: "Login",
+        content: <>Usuario o contraseña erróneo</>,
+      });
+      return false;
+    }
+    console.log("nombre usuario :", resp.nombre);
+    console.log("grupo :", resp.grupo);
+    props.onLoginOK(true);
+    // } catch (error) {
+    //   modal.error({
+    //     title: "Login",
+    //     content: <>Problema con el servidor {error}</>,
+    //   });
+    // }
   };
 
   return (

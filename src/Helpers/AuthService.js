@@ -1,4 +1,4 @@
-import {
+/*import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
   // SignUpCommand,
@@ -6,12 +6,16 @@ import {
   RespondToAuthChallengeCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import config from "./config.json";
+*/
 
+/*
 const cognitoClient = new CognitoIdentityProviderClient({
   region: config.region,
 });
+*/
 
 export default class AuthService {
+  /*
   static async ingresar(username, password) {
     const params = {
       AuthFlow: "USER_PASSWORD_AUTH",
@@ -57,7 +61,7 @@ export default class AuthService {
       return null;
     }
   }
-
+  */
   /*
   static async signUp(email, password) {
     const params = {
