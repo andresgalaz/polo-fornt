@@ -49,10 +49,18 @@ export default function LoginForm(props) {
         });
         return false;
       }
-      console.log("tokensesion :", tokenSession);
       const cambio = await cambiaContrasena(tokenSession, cUsuario, cPasswordNew1);
-      console.log(cambio);
-      return true;
+      if (cambio.length > 0) {
+        modal.error({
+          title: "Login",
+          content: <>{cambio}</>,
+        });
+        return false;
+      } else {
+        props.onLoginOK(true);
+        return true;
+      }
+      // return true;
     }
     // try {
     const resp = await ingresar(cUsuario, cPassword);
