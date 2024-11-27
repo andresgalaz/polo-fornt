@@ -1,24 +1,34 @@
-import { Button, Flex, Modal, Select, Space, Table } from "antd";
+import { Button, Flex, Input, Modal, Select, Space, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import AxiosService from "../../Helpers/AxiosService";
 import { CSVLink } from "react-csv";
 import ExportHlp from "../../Helpers/ExportHlp";
 
+let partidosData;
 export default function ResultadoPartidos() {
-  const [state, setstate] = useState([]);
-  const [filtro] = useState({ fCategoria: "", fTemporada: "" });
+  const [filtro] = useState({ fCategoria: "", fTemporada: "", fAbierto: "", cEquipo: "" });
   const [loading, setLoading] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [abiertos, setAbiertos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [temporadas, setTemporadas] = useState([]);
+  const [state, setState] = useState([]);
+
   useEffect(
     () => {
+      getAbiertos();
       getTemporadas();
       getCategorias();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  const getAbiertos = async () => {
+    const { data } = await AxiosService.get("abierto", modal);
+    if (!data) return;
+    setAbiertos(data);
+  };
 
   const getTemporadas = async () => {
     const { data } = await AxiosService.get("temporada", modal);
@@ -38,14 +48,25 @@ export default function ResultadoPartidos() {
   };
 
   const getData = async () => {
-    console.log(filtro);
     if (filtro.fTemporada === "" || filtro.fCategoria === "") return;
-    console.log(filtro);
     setLoading(true);
     const cUrlRequest = "reporte/resultado-partidos?" + new URLSearchParams(filtro).toString();
     const { data } = await AxiosService.get(cUrlRequest, modal);
-    setstate(data);
+    partidosData = data;
+    searchTable();
+    // setstate(data);
     setLoading(false);
+  };
+
+  const searchTable = () => {
+    const searchKey = filtro.cEquipo;
+    var data = partidosData.filter((rec) => {
+      return (
+        rec["cEquipo1"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase()) ||
+        rec["cEquipo2"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
+      );
+    });
+    setState(data);
   };
 
   const columns = [
@@ -98,6 +119,32 @@ export default function ResultadoPartidos() {
             style={{ width: "240px" }}
           ></Select>
         </Space>
+        <Space>
+          Abierto
+          <Select
+            label="Abierto"
+            options={abiertos}
+            defaultValue=""
+            onChange={(v) => {
+              filtro.fAbierto = v;
+              getData();
+            }}
+            fieldNames={{ label: "cNombre", value: "pAbierto" }}
+            style={{ width: "220px" }}
+          ></Select>
+        </Space>
+        <Space>
+          Equipo
+          <Input
+            placeholder="busca equipos"
+            style={{ width: "200px" }}
+            onChange={(e) => {
+              filtro.cEquipo = e.target.value;
+              searchTable();
+            }}
+          />
+        </Space>
+
         {!state || state.length === 0 || loading ? (
           ""
         ) : (

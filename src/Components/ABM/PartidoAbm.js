@@ -50,8 +50,10 @@ export default function PartidoAbm() {
 
   const AjusteGanadorHandicap = () => {
     // Ganador por Handicap
-    const nGolesAjustEquipo1 = form.getFieldValue("nGolesEquipo1") + form.getFieldValue("nAjusteHandicapEquipo1");
-    const nGolesAjustEquipo2 = form.getFieldValue("nGolesEquipo2") + form.getFieldValue("nAjusteHandicapEquipo2");
+    const nGolesAjustEquipo1 = form.getFieldValue("nGolesEquipo1") - form.getFieldValue("nAjusteHandicapEquipo1");
+    const nGolesAjustEquipo2 = form.getFieldValue("nGolesEquipo2") - form.getFieldValue("nAjusteHandicapEquipo2");
+
+    console.log("AjusteGanadorHandicap", nGolesAjustEquipo1, nGolesAjustEquipo2);
 
     if (nGolesAjustEquipo1 > nGolesAjustEquipo2) {
       form.setFieldValue("fEquipoGanadorHandicap", form.getFieldValue("fEquipo1"));
@@ -252,6 +254,8 @@ export default function PartidoAbm() {
 
   const handleFormValuesChange = async (changedValues) => {
     const formFieldName = Object.keys(changedValues)[0];
+    console.log(formFieldName);
+    console.log(changedValues);
 
     if ("fTemporada,fAbierto".includes(formFieldName)) getEquipos();
 
@@ -261,9 +265,16 @@ export default function PartidoAbm() {
       form.setFieldValue("fEquipoGanadorAbierto", undefined);
       form.setFieldValue("fEquipoGanadorHandicap", undefined);
     }
-    if (formFieldName === "nGolesEquipo1" || formFieldName === "nGolesEquipo2") {
+    if (
+      formFieldName === "nGolesEquipo1" ||
+      formFieldName === "nGolesEquipo2" ||
+      formFieldName === "nAjusteHandicapEquipo1" ||
+      formFieldName === "nAjusteHandicapEquipo2"
+    ) {
       const nGolesEquipo1 = form.getFieldValue("nGolesEquipo1");
       const nGolesEquipo2 = form.getFieldValue("nGolesEquipo2");
+
+      console.log("handleFormValuesChange:nGolesEquipo", nGolesEquipo1, nGolesEquipo2);
 
       if (nGolesEquipo1 > nGolesEquipo2) {
         form.setFieldValue("fEquipoGanadorAbierto", form.getFieldValue("fEquipo1"));

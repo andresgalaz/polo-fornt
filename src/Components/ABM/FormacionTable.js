@@ -43,14 +43,6 @@ export default function FormacionTable({ onOk }) {
     setCategorias(data);
   };
 
-  const searchTable = () => {
-    const searchKey = filtro.cEquipo;
-    var data = formacionesData.filter((rec) =>
-      rec["cEquipo"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
-    );
-    setState(data);
-  };
-
   const getData = async () => {
     const cUrlRequest = "formacion/listEquipo?" + new URLSearchParams(filtro).toString();
     const { data } = await AxiosService.get(cUrlRequest, modal, () => {
@@ -58,6 +50,14 @@ export default function FormacionTable({ onOk }) {
     });
     formacionesData = data;
     searchTable();
+  };
+
+  const searchTable = () => {
+    const searchKey = filtro.cEquipo;
+    var data = formacionesData.filter((rec) =>
+      rec["cEquipo"].toLocaleLowerCase().includes(searchKey.toLocaleLowerCase())
+    );
+    setState(data);
   };
 
   const seleccionar = (rec) => {
