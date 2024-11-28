@@ -48,10 +48,15 @@ export default function PartidoAbm() {
     []
   );
 
-  const AjusteGanadorHandicap = () => {
+  const AjusteGanadorHandicap = async () => {
+    const elemEquipo1 = await equipos.find((val) => val.pEquipo === form.getFieldValue("fEquipo1"));
+    const elemEquipo2 = await equipos.find((val) => val.pEquipo === form.getFieldValue("fEquipo2"));
+
     // Ganador por Handicap
-    const nGolesAjustEquipo1 = form.getFieldValue("nGolesEquipo1") - form.getFieldValue("nAjusteHandicapEquipo1");
-    const nGolesAjustEquipo2 = form.getFieldValue("nGolesEquipo2") - form.getFieldValue("nAjusteHandicapEquipo2");
+    const nGolesAjustEquipo1 =
+      form.getFieldValue("nGolesEquipo1") + elemEquipo1.nHandicap + form.getFieldValue("nAjusteHandicapEquipo1");
+    const nGolesAjustEquipo2 =
+      form.getFieldValue("nGolesEquipo2") + elemEquipo2.nHandicap + form.getFieldValue("nAjusteHandicapEquipo2");
 
     console.log("AjusteGanadorHandicap", nGolesAjustEquipo1, nGolesAjustEquipo2);
 
@@ -210,7 +215,7 @@ export default function PartidoAbm() {
     const nSumaHCP = nEquipo === 1 ? sumaHCP1 : sumaHCP2;
     form.setFieldValue("nAjusteHandicapEquipo" + nEquipo, data[4].nHandicap - nSumaHCP);
 
-    AjusteGanadorHandicap();
+    await AjusteGanadorHandicap();
     setnEquipo(0);
   };
 
@@ -283,7 +288,7 @@ export default function PartidoAbm() {
       } else {
         form.setFieldValue("fEquipoGanadorAbierto", null);
       }
-      AjusteGanadorHandicap();
+      await AjusteGanadorHandicap();
     }
     setbBotonGrabar(
       form.getFieldValue("fTemporada") !== undefined &&
@@ -403,7 +408,7 @@ export default function PartidoAbm() {
       setFormacionEquipo2([...data]);
       form.setFieldValue("nAjusteHandicapEquipo2", nHandicapTotal - sumaHCP);
     }
-    AjusteGanadorHandicap();
+    await AjusteGanadorHandicap();
   };
 
   return (
