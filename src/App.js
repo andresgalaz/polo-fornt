@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ContainerOutlined,
   DatabaseOutlined,
@@ -50,6 +50,18 @@ const App = () => {
   const highlight = () => {
     if (selectedKey.substring(0, 1) === "/") return selectedKey.substring(1);
   };
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('isLoggedIn');
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      if (data.expiry > Date.now())
+        setIsLogged(data.isLoggedIn);
+      else
+        setIsLogged(false);
+    } else
+      setIsLogged(false);
+  }, []);
 
   return (
     <ConfigProvider
@@ -260,6 +272,7 @@ const App = () => {
                     label: "Salir",
                     onClick: () => {
                       setIsLogged(false);
+                      localStorage.setItem('isLoggedIn', JSON.stringify({ isLoggedIn: false, expiry: 0 }));
                       navigate("/");
                     },
                   },

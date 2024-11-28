@@ -85,12 +85,9 @@ export default function LoginForm(props) {
     console.log("nombre usuario :", resp.nombre);
     console.log("grupo :", resp.grupo);
     props.onLoginOK(true);
-    // } catch (error) {
-    //   modal.error({
-    //     title: "Login",
-    //     content: <>Problema con el servidor {error}</>,
-    //   });
-    // }
+    // Save localstorage. Expira en 35 días
+    const expiryTime = Date.now() + 35 * 24 * 3600 * 1000;
+    localStorage.setItem('isLoggedIn', JSON.stringify({ isLoggedIn: true, expiry: expiryTime }));
   };
 
   return (
