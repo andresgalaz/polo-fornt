@@ -34,6 +34,8 @@ import RankingJugadores from "./Components/reportes/RankingJugadores";
 import ResultadoPartidos from "./Components/reportes/ResultadoPartidos";
 import ProcesosTable from "./Components/procesos/ProcesosTable";
 import LoginForm from "./Components/LoginForm";
+import RankingEquipoPartido from "./Components/reportes/RankingEquipoPartido";
+import RankingJugadorPartido from "./Components/reportes/RankingJugadorPartido";
 
 const { Header, Sider, Content } = Layout;
 
@@ -217,6 +219,22 @@ const App = () => {
                         },
                       },
                       {
+                        key: "ranking-equipo-partido",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Puntos Equipos por Partido",
+                        onClick: () => {
+                          navigate("/ranking-equipo-partido");
+                        },
+                      },
+                      {
+                        key: "ranking-jugador-partido",
+                        icon: <DeliveredProcedureOutlined />,
+                        label: "Puntos por Jugador por Partido",
+                        onClick: () => {
+                          navigate("/ranking-jugador-partido");
+                        },
+                      },
+                      {
                         key: "ranking-jugadores",
                         icon: <DeliveredProcedureOutlined />,
                         label: "Ranking Jugadores",
@@ -311,6 +329,8 @@ const App = () => {
               <Route path="/ranking-equipos" element={<RankingEquipos />} />
               <Route path="/ranking-jugadores" element={<RankingJugadores />} />
               <Route path="/temporada-abm" element={<TemporadaAbm />} />
+              <Route path="/ranking-equipo-partido" element={<RankingEquipoPartido />} />
+              <Route path="/ranking-jugador-partido" element={<RankingJugadorPartido />} />
             </Routes>
           </Content>{" "}
         </Layout>
