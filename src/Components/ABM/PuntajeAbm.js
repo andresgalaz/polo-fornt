@@ -89,6 +89,8 @@ export default function PuntajeAbm() {
     { title: "Abierto", dataIndex: "cAbierto", key: "cAbierto" },
     { title: "Puntaje Ranking", dataIndex: "nPuntajeRanking", key: "nPuntajeRanking" },
     { title: "Puntaje Handicap", dataIndex: "nPuntajeHandicap", key: "nPuntajeHandicap" },
+    { title: "Fantasy Abierto", dataIndex: "nFantasyAbierto", key: "nFantasyAbierto" },
+    { title: "Fantasy HCP", dataIndex: "nFantasyHCP", key: "nFantasyHCP" },
     { title: "Puntaje Goles", dataIndex: "nPuntajeGoles", key: "nPuntajeGoles" },
     { title: "Final", dataIndex: "bFinal", key: "bFinal" },
     { title: "TC", dataIndex: "bTripleCorona", key: "bTripleCorona" },

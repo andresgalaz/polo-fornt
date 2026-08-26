@@ -81,6 +81,20 @@ export default function PuntajeForm({ initialValues, onFormInstanceReady }) {
         </Row>
         <Row>
           <Col sm={18}>
+            <Form.Item name="nFantasyAbierto" label="Fantasy Abierto" rules={[{ required: true }]}>
+              <InputNumber min={0} />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={18}>
+            <Form.Item name="nFantasyHCP" label="Fantasy HCP" rules={[{ required: true }]}>
+              <InputNumber min={0} />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={18}>
             <Form.Item name="nPuntajeGoles" label="Puntaje Goles" rules={[{ required: true }]}>
               <InputNumber min={0} />
             </Form.Item>
