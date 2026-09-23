@@ -36,7 +36,6 @@ function FormacionAbm() {
     // Valida que no exista el equipo para la misma temporada
     const cUrlParams = new URLSearchParams({ fTemporada, fEquipo }).toString();
     const { data: verif } = await AxiosService.get(`formacion?${cUrlParams}`, modal);
-    console.log(verif);
     if (verif && verif.length > 0)
       modal.warning({
         title: "Validacicion Formacioones",
@@ -148,11 +147,8 @@ function FormacionAbm() {
 
     if (!idFormacion) return;
     const { data } = await AxiosService.get(`formacion/${idFormacion}`, modal);
-    console.log("getData PRE:", data.length);
     totales(data);
-    console.log("getData POST:", data.length);
     setstate(data);
-    console.log("DATA:", data);
 
     form.setFieldsValue({
       fEquipo: data[0].fEquipo,
@@ -253,7 +249,6 @@ function FormacionAbm() {
     data[rec.idx].nHandicapVotado = rec.nHandicapVotado;
     data[rec.idx].nHandicapVotadoJugadores = rec.nHandicapVotadoJugadores;
     // Se copia para no destruir el original
-    console.log("grabarJugador:");
     totales(data);
   };
 
@@ -376,7 +371,6 @@ function FormacionAbm() {
         onRow={(record, rowIndex) => {
           return {
             onClick: (event) => {
-              console.log("onRow", state, rowIndex);
               // Fila de totales
               if (rowIndex === 4) return;
               // Filas de jugadores

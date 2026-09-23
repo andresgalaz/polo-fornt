@@ -13,7 +13,6 @@ export default function LoginForm(props) {
 
   const ingresar = async (cUsuario, cPassword) => {
     const { data } = await AxiosService.put("login/ingresar", { cUsuario, cPassword }, modal, () => {});
-    console.log(data);
     return data;
   };
   const cambiaContrasena = async (cTokenSession, cUsuario, cPassword) => {
@@ -23,7 +22,6 @@ export default function LoginForm(props) {
       modal,
       () => {}
     );
-    console.log(data);
     return data;
   };
 
@@ -64,8 +62,6 @@ export default function LoginForm(props) {
     }
     // try {
     const resp = await ingresar(cUsuario, cPassword);
-    // console.log("Sign in successful", session.AuthenticationResult.IdToken);
-    console.log("tokensesion :", resp.session);
     if (resp.nuevaPassword) {
       setTokenSession(resp.session);
       modal.error({
@@ -82,8 +78,6 @@ export default function LoginForm(props) {
       });
       return false;
     }
-    console.log("nombre usuario :", resp.nombre);
-    console.log("grupo :", resp.grupo);
     props.onLoginOK(true);
     // Save localstorage. Expira en 35 días
     const expiryTime = Date.now() + 35 * 24 * 3600 * 1000;

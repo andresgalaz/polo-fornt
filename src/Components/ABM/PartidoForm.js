@@ -23,8 +23,6 @@ export default function PartidosForm({ initialValues, onFormInstanceReady }) {
   const handleFormValuesChange = async (changedValues) => {
     const formFieldName = Object.keys(changedValues)[0];
     const formFieldValue = Object.values(changedValues)[0];
-    console.log(initialValues.fTemporada);
-    console.log(changedValues);
     if (formFieldName === "fJugador") {
       const cParams = new URLSearchParams({
         fTemporada: initialValues.fTemporada,
@@ -68,7 +66,6 @@ export default function PartidosForm({ initialValues, onFormInstanceReady }) {
       <Form.Item name="nHandicap" label="HCP Inicial">
         <InputNumber
           parser={(value) => {
-            console.log("parser");
             return `${parseInt(value)}`;
           }}
         />

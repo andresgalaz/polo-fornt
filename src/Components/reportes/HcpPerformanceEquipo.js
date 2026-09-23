@@ -38,7 +38,6 @@ export default function HcpPerformanceEquipo() {
   };
 
   const getData = async () => {
-    console.log(filtro);
     if (filtro.fTemporada === "" || filtro.fCategoria === "") return;
     setLoading(true);
     const cUrlRequest = "reporte/performance-equipo?" + new URLSearchParams(filtro).toString();
